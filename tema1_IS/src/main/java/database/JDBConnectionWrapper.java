@@ -29,7 +29,7 @@ public class JDBConnectionWrapper {
         }
     }
 
-    private void createTables() throws SQLException {
+   /* private void createTables() throws SQLException {
         Statement statement = connection.createStatement();
 
         String sql = "CREATE TABLE IF NOT EXISTS book(" +
@@ -41,7 +41,55 @@ public class JDBConnectionWrapper {
                 "UNIQUE KEY id_UNIQUE(id)" +
                 ") ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;";
         statement.execute(sql);
-    }
+    }*/
+   /* private void createTables() throws SQLException {
+        Statement statement = connection.createStatement();
+
+        String sql = "CREATE TABLE IF NOT EXISTS book(" +
+                "id bigint NOT NULL AUTO_INCREMENT," +
+                "author varchar(500) NOT NULL," +
+                "title varchar(500) NOT NULL," +
+                "publishedDate datetime DEFAULT NULL," +
+                "runtime int, " + // Add runtime column for EBooks
+                "format varchar(100), " + // Add format column for AudioBooks
+                "PRIMARY KEY(id)," +
+                "UNIQUE KEY id_UNIQUE(id)" +
+                ") ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;";
+        statement.execute(sql);
+    }*/
+   private void createTables() throws SQLException {
+       Statement statement = connection.createStatement();
+
+       // Create Book table
+       String bookTableSql = "CREATE TABLE IF NOT EXISTS book(" +
+               "id bigint NOT NULL AUTO_INCREMENT," +
+               "author varchar(500) NOT NULL," +
+               "title varchar(500) NOT NULL," +
+               "publishedDate datetime DEFAULT NULL," +
+               "PRIMARY KEY(id)," +
+               "UNIQUE KEY id_UNIQUE(id)" +
+               ") ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;";
+       statement.execute(bookTableSql);
+
+       // Create EBook table
+       String eBookTableSql = "CREATE TABLE IF NOT EXISTS ebook(" +
+               "id bigint NOT NULL," + // Foreign key referencing book.id
+               "format varchar(100)," +
+               "PRIMARY KEY(id)," +
+               "FOREIGN KEY (id) REFERENCES book(id)" +
+               ") ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+       statement.execute(eBookTableSql);
+
+       // Create AudioBook table
+       String audioBookTableSql = "CREATE TABLE IF NOT EXISTS audiobook(" +
+               "id bigint NOT NULL," + // Foreign key referencing book.id
+               "runtime int," +
+               "PRIMARY KEY(id)," +
+               "FOREIGN KEY (id) REFERENCES book(id)" +
+               ") ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+       statement.execute(audioBookTableSql);
+   }
+
 
     public boolean testConnection() throws SQLException {
         return connection.isValid(TIMEOUT);

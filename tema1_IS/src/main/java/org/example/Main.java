@@ -20,9 +20,16 @@ public class Main {
                 .setPublishedDate(LocalDate.of(2010, 7, 3))
                 .build();
 
-        // bookRepository.save(book);
-        bookRepository.removeAll();
-        System.out.println(book);
+        Book ebook=new BookBuilder()
+                .setTitle("Craiasa zapezii")
+                .setAuthor("Christian Anderson")
+                .setPublishedDate(LocalDate.of(2010, 7, 3))
+                .buildEBook()
+                .setFormat("pdf");
+        //bookRepository.save(book);
+        bookRepository.save(ebook);
+        //bookRepository.removeAll();
+        //System.out.println(book);
         System.out.println(bookRepository.findAll());
     }
 }

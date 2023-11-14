@@ -1,46 +1,51 @@
 package repository.book;
 
 import model.Book;
+import model.EBook;
+import model.AudioBook;
+import model.PhysicalBook;
 import model.builder.BookBuilder;
 
-import javax.xml.transform.Result;
+
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class BookRepositoryMySQL implements BookRepository{
+public class BookRepositoryMySQL implements BookRepository<Book> {
     private final Connection connection;
 
-    public BookRepositoryMySQL(Connection connection){
+    public BookRepositoryMySQL(Connection connection) {
         this.connection = connection;
     }
 
     @Override
     public List<Book> findAll() {
-        String sql = "SELECT * FROM book;";
+        String sql = "SELECT * FROM book ;";
 
         List<Book> books = new ArrayList<>();
-        try{
+        try {
             Statement statement = connection.createStatement();
 
             ResultSet resultSet = statement.executeQuery(sql);
 
-            while (resultSet.next()){
+            while (resultSet.next()) {
                 books.add(getBookFromResultSet(resultSet));
             }
 
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-
 
         return books;
     }
 
     @Override
     public Optional<Book> findById(Long id) {
-        String sql = "SELECT * FROM book WHERE id = ?;";
+        String sql = "SELECT * FROM book,ebook,audiobook WHERE id = ?;";
+        Optional<Book> book = Optional.empty();
+
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, id);
@@ -48,93 +53,112 @@ public class BookRepositoryMySQL implements BookRepository{
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if (resultSet.next()) {
-                return Optional.of(getBookFromResultSet(resultSet));
-            } else {
-                return Optional.empty();
+                book = Optional.of(getBookFromResultSet(resultSet));
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            return Optional.empty();
         }
+        return book;
     }
-
-
-    /**
-     *
-     * How to reproduce a sql injection attack on insert statement
-     *
-     *
-     * 1) Uncomment the lines below and comment out the PreparedStatement part
-     * 2) For the Insert Statement DROP TABLE SQL Injection attack to succeed we will need multi query support to be added to our connection
-     * Add to JDBConnectionWrapper the following flag after the DB_URL + schema concatenation: + "?allowMultiQueries=true"
-     * 3) book.setAuthor("', '', null); DROP TABLE book; -- "); // this will delete the table book
-     * 3*) book.setAuthor("', '', null); SET FOREIGN_KEY_CHECKS = 0; SET GROUP_CONCAT_MAX_LEN=32768; SET @tables = NULL; SELECT GROUP_CONCAT('`', table_name, '`') INTO @tables FROM information_schema.tables WHERE table_schema = (SELECT DATABASE()); SELECT IFNULL(@tables,'dummy') INTO @tables; SET @tables = CONCAT('DROP TABLE IF EXISTS ', @tables); PREPARE stmt FROM @tables; EXECUTE stmt; DEALLOCATE PREPARE stmt; SET FOREIGN_KEY_CHECKS = 1; --"); // this will delete all tables. You are not required to know the table name anymore.
-     * 4) Run the program. You will get an exception on findAll() method because the test_library.book table does not exist anymore
-     */
-
-
-    // ALWAYS use PreparedStatement when USER INPUT DATA is present
-    // DON'T CONCATENATE Strings
 
     @Override
     public boolean save(Book book) {
-        //String sql = "INSERT INTO book VALUES(null, ?, ?, ?);";
-        String sql = "INSERT INTO book (author, title, publishedDate) VALUES (?, ?, ?);";
+        String bookSql = "INSERT INTO book (author, title, publishedDate) VALUES (?, ?, ?);";
+        String ebookSql = "INSERT INTO ebook (id, format) VALUES (?, ?);";
+        String audiobookSql = "INSERT INTO audiobook (id, runtime) VALUES (?, ?);";
 
-//        String newSql = "INSERT INTO book VALUES(null, \'" + book.getAuthor() +"\', \'"+ book.getTitle()+"\', null );";
+        try {
+            PreparedStatement bookStatement = connection.prepareStatement(bookSql);
+            bookStatement.setString(1, book.getAuthor());
+            bookStatement.setString(2, book.getTitle());
 
+            if (book.getPublishedDate() != null) {
+                bookStatement.setDate(3, java.sql.Date.valueOf(book.getPublishedDate()));
+            } else {
+                bookStatement.setNull(3, Types.DATE);
+            }
 
+            int rowsInserted = bookStatement.executeUpdate();
 
-
-
-        try{
-//            Statement statement = connection.createStatement();
-//            statement.executeUpdate(newSql);
-//            return true;
-
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, book.getAuthor());
-            preparedStatement.setString(2, book.getTitle());
-            preparedStatement.setDate(3, java.sql.Date.valueOf(book.getPublishedDate()));
-
-            int rowsInserted = preparedStatement.executeUpdate();
-            /*
             if (rowsInserted == 1) {
-                ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    book.setId(generatedKeys.getLong(1));
+                long bookId = getLastInsertedId();
+                if (bookId != -1) {
+                    if (book instanceof EBook) {
+                        PreparedStatement ebookStatement = connection.prepareStatement(ebookSql);
+                        ebookStatement.setLong(1, bookId);
+                        ebookStatement.setString(2, ((EBook) book).getFormat());
+                        ebookStatement.executeUpdate();
+                    } else if (book instanceof AudioBook) {
+                        PreparedStatement audiobookStatement = connection.prepareStatement(audiobookSql);
+                        audiobookStatement.setLong(1, bookId);
+                        audiobookStatement.setInt(2, ((AudioBook) book).getRunTime());
+                        audiobookStatement.executeUpdate();
+                    }
+                    return true;
                 }
-                return true;*/
-            /*} else {
-                return false;
-            }*/
-            return (rowsInserted != 1) ? false : true;
+            }
 
-        } catch (SQLException e){
+            return false;
+
+        } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
+    }
 
+    private long getLastInsertedId() {
+        try (Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery("SELECT LAST_INSERT_ID() as last_id");
+            if (resultSet.next()) {
+                return resultSet.getLong("last_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
     @Override
     public void removeAll() {
-        String sql = "DELETE FROM book;";
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
+            String deleteAudioBookSql = "DELETE FROM audiobook;";
+            String deleteEBookSql = "DELETE FROM ebook;";
+            String deleteBookSql = "DELETE FROM book;";
+
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(deleteAudioBookSql);
+            statement.executeUpdate(deleteEBookSql);
+            statement.executeUpdate(deleteBookSql);
+
+        }catch (SQLException e){
             e.printStackTrace();
         }
     }
 
-
     private Book getBookFromResultSet(ResultSet resultSet) throws SQLException {
-        return new BookBuilder()
-                .setId(resultSet.getLong("id"))
-                .setAuthor(resultSet.getString("author"))
-                .setTitle(resultSet.getString("title"))
-                .setPublishedDate(new java.sql.Date((resultSet.getDate("publishedDate")).getTime()).toLocalDate())
-                .build();
+        if (resultSet.getString("runtime") != null) {
+            return new BookBuilder()
+                    .setId(resultSet.getLong("id"))
+                    .setTitle(resultSet.getString("title"))
+                    .setAuthor(resultSet.getString("author"))
+                    .setRunTime(resultSet.getInt("runtime"))
+                    .setPublishedDate(new java.sql.Date(resultSet.getDate("publishedDate").getTime()).toLocalDate())
+                    .buildAudioBook();
+        } else if (resultSet.getString("format") != null) {
+            return new BookBuilder()
+                    .setId(resultSet.getLong("id"))
+                    .setTitle(resultSet.getString("title"))
+                    .setAuthor(resultSet.getString("author"))
+                    .setFormat(resultSet.getString("format"))
+                    .setPublishedDate(new java.sql.Date(resultSet.getDate("publishedDate").getTime()).toLocalDate())
+                    .buildEBook();
+        } else {
+            return new BookBuilder()
+                    .setId(resultSet.getLong("id"))
+                    .setTitle(resultSet.getString("title"))
+                    .setAuthor(resultSet.getString("author"))
+                    .setPublishedDate(new java.sql.Date(resultSet.getDate("publishedDate").getTime()).toLocalDate())
+                    .build();
+        }
     }
 }
