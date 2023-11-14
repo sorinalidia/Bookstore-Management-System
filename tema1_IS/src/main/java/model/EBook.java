@@ -15,9 +15,8 @@ public class EBook extends PhysicalBook {
         return format;
     }
 
-    public Book setFormat(String format) {
+    public void setFormat(String format) {
         this.format = format;
-        return this;
     }
 
     @Override

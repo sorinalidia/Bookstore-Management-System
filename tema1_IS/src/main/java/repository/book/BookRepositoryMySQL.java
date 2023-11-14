@@ -22,13 +22,17 @@ public class BookRepositoryMySQL implements BookRepository<Book> {
 
     @Override
     public List<Book> findAll() {
-        String sql = "SELECT * FROM book ;";
+        String sql = "SELECT b.id, b.title, b.author, b.publishedDate, e.format, a.runtime " +
+                "FROM book b " +
+                "LEFT JOIN ebook e ON b.id = e.id " +
+                "LEFT JOIN audiobook a ON b.id = a.id;";
 
         List<Book> books = new ArrayList<>();
         try {
             Statement statement = connection.createStatement();
 
             ResultSet resultSet = statement.executeQuery(sql);
+
 
             while (resultSet.next()) {
                 books.add(getBookFromResultSet(resultSet));

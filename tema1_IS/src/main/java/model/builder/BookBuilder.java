@@ -39,8 +39,6 @@ public class BookBuilder {
         return book;
     }
 
-    // Additional methods for building AudioBook and EBook instances
-
     public AudioBook buildAudioBook() {
         AudioBook audioBook = new AudioBook();
         audioBook.setId(book.getId());
@@ -58,9 +56,6 @@ public class BookBuilder {
         eBook.setPublishedDate(book.getPublishedDate());
         return eBook;
     }
-
-
-    // Additional methods to set properties specific to AudioBook and EBook
 
     public BookBuilder setRunTime(int runTime) {
         if (book instanceof AudioBook) {

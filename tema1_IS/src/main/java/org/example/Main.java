@@ -24,8 +24,8 @@ public class Main {
                 .setTitle("Craiasa zapezii")
                 .setAuthor("Christian Anderson")
                 .setPublishedDate(LocalDate.of(2010, 7, 3))
-                .buildEBook()
-                .setFormat("pdf");
+                .setFormat("pdf")
+                .buildEBook();
         //bookRepository.save(book);
         bookRepository.save(ebook);
         //bookRepository.removeAll();
