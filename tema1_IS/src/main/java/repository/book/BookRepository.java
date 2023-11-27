@@ -1,16 +1,22 @@
 package repository.book;
 
 import model.Book;
+import model.Order;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface BookRepository<T extends Book> {
-    List<T> findAll();
+public interface BookRepository {
+    List<Book> findAll();
 
-    Optional<T> findById(Long id);
+    Optional<Book> findById(Long id);
 
-    boolean save(T book);
+    boolean save(Book book);
+
+    boolean buyBook(Long customerId, Long bookId);
+
+    List<Order> getCustomerOrders(Long customerId);
 
     void removeAll();
+
 }

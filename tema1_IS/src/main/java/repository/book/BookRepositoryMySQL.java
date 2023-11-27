@@ -1,11 +1,9 @@
 package repository.book;
 
 import model.Book;
-import model.EBook;
-import model.AudioBook;
-import model.PhysicalBook;
+import model.Order;
 import model.builder.BookBuilder;
-
+import model.builder.OrderBuilder;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -13,28 +11,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class BookRepositoryMySQL implements BookRepository<Book> {
+public class BookRepositoryMySQL implements BookRepository{
+
     private final Connection connection;
 
-    public BookRepositoryMySQL(Connection connection) {
+    public BookRepositoryMySQL(Connection connection){
         this.connection = connection;
     }
 
     @Override
     public List<Book> findAll() {
-        String sql = "SELECT b.id, b.title, b.author, b.publishedDate, e.format, a.runtime " +
-                "FROM book b " +
-                "LEFT JOIN ebook e ON b.id = e.id " +
-                "LEFT JOIN audiobook a ON b.id = a.id;";
+        String sql = "SELECT * FROM book;";
 
         List<Book> books = new ArrayList<>();
+
         try {
             Statement statement = connection.createStatement();
-
             ResultSet resultSet = statement.executeQuery(sql);
 
-
-            while (resultSet.next()) {
+            while (resultSet.next()){
                 books.add(getBookFromResultSet(resultSet));
             }
 
@@ -47,62 +42,83 @@ public class BookRepositoryMySQL implements BookRepository<Book> {
 
     @Override
     public Optional<Book> findById(Long id) {
-        String sql = "SELECT * FROM book,ebook,audiobook WHERE id = ?;";
+        String sql = "SELECT * FROM book WHERE id = ?";
         Optional<Book> book = Optional.empty();
 
-        try {
+        try{
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, id);
 
             ResultSet resultSet = preparedStatement.executeQuery();
 
-            if (resultSet.next()) {
+            if (resultSet.next()){
                 book = Optional.of(getBookFromResultSet(resultSet));
             }
-        } catch (SQLException e) {
+
+        }catch (SQLException e){
             e.printStackTrace();
         }
+
         return book;
     }
 
+    /**
+     *
+     * How to reproduce a sql injection attack on insert statement
+     *
+     *
+     * 1) Uncomment the lines below and comment out the PreparedStatement part
+     * 2) For the Insert Statement DROP TABLE SQL Injection attack to succeed we will need multi query support to be added to our connection
+     * Add to JDBConnectionWrapper the following flag after the DB_URL + schema concatenation: + "?allowMultiQueries=true"
+     * 3) book.setAuthor("', '', null); DROP TABLE book; -- "); // this will delete the table book
+     * 3*) book.setAuthor("', '', null); SET FOREIGN_KEY_CHECKS = 0; SET GROUP_CONCAT_MAX_LEN=32768; SET @tables = NULL; SELECT GROUP_CONCAT('`', table_name, '`') INTO @tables FROM information_schema.tables WHERE table_schema = (SELECT DATABASE()); SELECT IFNULL(@tables,'dummy') INTO @tables; SET @tables = CONCAT('DROP TABLE IF EXISTS ', @tables); PREPARE stmt FROM @tables; EXECUTE stmt; DEALLOCATE PREPARE stmt; SET FOREIGN_KEY_CHECKS = 1; --"); // this will delete all tables. You are not required to know the table name anymore.
+     * 4) Run the program. You will get an exception on findAll() method because the test_library.book table does not exist anymore
+     */
+
+
+    // ALWAYS use PreparedStatement when USER INPUT DATA is present
+    // DON'T CONCATENATE Strings!
+
     @Override
     public boolean save(Book book) {
-        String bookSql = "INSERT INTO book (author, title, publishedDate) VALUES (?, ?, ?);";
-        String ebookSql = "INSERT INTO ebook (id, format) VALUES (?, ?);";
-        String audiobookSql = "INSERT INTO audiobook (id, runtime) VALUES (?, ?);";
+        String sql = "INSERT INTO book VALUES(null, ?, ?, ?);";
+
+        String newSql = "INSERT INTO book VALUES(null, \'" + book.getAuthor() +"\', \'"+ book.getTitle()+"\', null );";
+
+
+        try{
+//            Statement statement = connection.createStatement();
+//            statement.executeUpdate(newSql);
+//            return true;
+
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, book.getAuthor());
+            preparedStatement.setString(2, book.getTitle());
+            preparedStatement.setDate(3, java.sql.Date.valueOf(book.getPublishedDate()));
+
+            int rowsInserted = preparedStatement.executeUpdate();
+
+            return (rowsInserted != 1) ? false : true;
+
+        } catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        }
+
+    }
+    @Override
+    public boolean buyBook(Long customerId, Long bookId) {
+        String sql = "INSERT INTO order_table(customer_id, book_id, purchase_date) VALUES (?, ?, ?);";
 
         try {
-            PreparedStatement bookStatement = connection.prepareStatement(bookSql);
-            bookStatement.setString(1, book.getAuthor());
-            bookStatement.setString(2, book.getTitle());
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setLong(1, customerId);
+            preparedStatement.setLong(2, bookId);
+            preparedStatement.setDate(3, Date.valueOf(LocalDate.now()));
 
-            if (book.getPublishedDate() != null) {
-                bookStatement.setDate(3, java.sql.Date.valueOf(book.getPublishedDate()));
-            } else {
-                bookStatement.setNull(3, Types.DATE);
-            }
+            int rowsInserted = preparedStatement.executeUpdate();
 
-            int rowsInserted = bookStatement.executeUpdate();
-
-            if (rowsInserted == 1) {
-                long bookId = getLastInsertedId();
-                if (bookId != -1) {
-                    if (book instanceof EBook) {
-                        PreparedStatement ebookStatement = connection.prepareStatement(ebookSql);
-                        ebookStatement.setLong(1, bookId);
-                        ebookStatement.setString(2, ((EBook) book).getFormat());
-                        ebookStatement.executeUpdate();
-                    } else if (book instanceof AudioBook) {
-                        PreparedStatement audiobookStatement = connection.prepareStatement(audiobookSql);
-                        audiobookStatement.setLong(1, bookId);
-                        audiobookStatement.setInt(2, ((AudioBook) book).getRunTime());
-                        audiobookStatement.executeUpdate();
-                    }
-                    return true;
-                }
-            }
-
-            return false;
+            return (rowsInserted != 1) ? false : true;
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -110,59 +126,56 @@ public class BookRepositoryMySQL implements BookRepository<Book> {
         }
     }
 
-    private long getLastInsertedId() {
-        try (Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery("SELECT LAST_INSERT_ID() as last_id");
-            if (resultSet.next()) {
-                return resultSet.getLong("last_id");
+    @Override
+    public List<Order> getCustomerOrders(Long customerId) {
+        String sql = "SELECT * FROM order_table WHERE customer_id = ?;";
+
+        List<Order> orders = new ArrayList<>();
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setLong(1, customerId);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                orders.add(getOrderFromResultSet(resultSet));
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return -1;
+
+        return orders;
     }
+
 
     @Override
     public void removeAll() {
-        try {
-            String deleteAudioBookSql = "DELETE FROM audiobook;";
-            String deleteEBookSql = "DELETE FROM ebook;";
-            String deleteBookSql = "DELETE FROM book;";
+        String sql = "DELETE FROM book WHERE id >= 0;";
 
+        try{
             Statement statement = connection.createStatement();
-            statement.executeUpdate(deleteAudioBookSql);
-            statement.executeUpdate(deleteEBookSql);
-            statement.executeUpdate(deleteBookSql);
-
+            statement.executeUpdate(sql);
         }catch (SQLException e){
             e.printStackTrace();
         }
     }
 
-    private Book getBookFromResultSet(ResultSet resultSet) throws SQLException {
-        if (resultSet.getString("runtime") != null) {
-            return new BookBuilder()
-                    .setId(resultSet.getLong("id"))
-                    .setTitle(resultSet.getString("title"))
-                    .setAuthor(resultSet.getString("author"))
-                    .setRunTime(resultSet.getInt("runtime"))
-                    .setPublishedDate(new java.sql.Date(resultSet.getDate("publishedDate").getTime()).toLocalDate())
-                    .buildAudioBook();
-        } else if (resultSet.getString("format") != null) {
-            return new BookBuilder()
-                    .setId(resultSet.getLong("id"))
-                    .setTitle(resultSet.getString("title"))
-                    .setAuthor(resultSet.getString("author"))
-                    .setFormat(resultSet.getString("format"))
-                    .setPublishedDate(new java.sql.Date(resultSet.getDate("publishedDate").getTime()).toLocalDate())
-                    .buildEBook();
-        } else {
-            return new BookBuilder()
-                    .setId(resultSet.getLong("id"))
-                    .setTitle(resultSet.getString("title"))
-                    .setAuthor(resultSet.getString("author"))
-                    .setPublishedDate(new java.sql.Date(resultSet.getDate("publishedDate").getTime()).toLocalDate())
-                    .build();
-        }
+    private Book getBookFromResultSet(ResultSet resultSet) throws SQLException{
+        return new BookBuilder()
+                .setId(resultSet.getLong("id"))
+                .setTitle(resultSet.getString("title"))
+                .setAuthor(resultSet.getString("author"))
+                .setPublishedDate(new java.sql.Date(resultSet.getDate("publishedDate").getTime()).toLocalDate())
+                .build();
+    }
+    private Order getOrderFromResultSet(ResultSet resultSet) throws SQLException {
+        return new OrderBuilder()
+                .setId(resultSet.getLong("id"))
+                .setCustomerId(resultSet.getLong("customer_id"))
+                .setBookId(resultSet.getLong("book_id"))
+                .setPurchaseDate(resultSet.getDate("purchase_date").toLocalDate())
+                .build();
     }
 }

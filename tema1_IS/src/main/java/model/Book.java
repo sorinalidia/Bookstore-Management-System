@@ -1,25 +1,58 @@
 package model;
 
-import java.time.LocalDate;
+// Java Bean -
 
 // POJO - Plain Old Java Object
-//Java Bean
-public interface Book{
-    public Long getId();
 
-    public void setId(Long id);
 
-    public String getAuthor();
+import java.time.LocalDate;
+import java.util.Date;
 
-    public void setAuthor(String author);
+public class Book{
 
-    public String getTitle();
+    private Long id;
 
-    public void setTitle(String title);
+    private String author;
 
-    public LocalDate getPublishedDate();
+    private String title;
 
-    public void setPublishedDate(LocalDate publishedDate);
-    public String toString();
+    private LocalDate publishedDate;
 
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public LocalDate getPublishedDate() {
+        return publishedDate;
+    }
+
+    public void setPublishedDate(LocalDate publishedDate) {
+        this.publishedDate = publishedDate;
+    }
+
+    @Override
+    public String toString(){
+        return String.format("Id: %d | Title: %s | Author: %s | Date: %s", this.id, this.title, this.author, this.publishedDate);
+    }
 }

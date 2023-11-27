@@ -1,10 +1,8 @@
 package repository.book;
 
-import model.Book;
-
 import java.util.*;
 
-public class Cache<T extends Book>{
+public class Cache<T>{
 
     private List<T> storage;
 
