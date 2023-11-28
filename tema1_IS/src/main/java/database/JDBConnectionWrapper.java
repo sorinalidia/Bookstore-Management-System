@@ -1,30 +1,36 @@
 package database;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+        import java.sql.Connection;
+        import java.sql.DriverManager;
+        import java.sql.SQLException;
+        import java.sql.Statement;
 
 public class JDBConnectionWrapper {
 
     private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/";
+
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/"; // 127.0.0.1
+
 
     private static final String USER = "Sorina";
-    private static final String PASSWORD = "JustinBieber28";
-    private static final int TIMEOUT = 5;
 
+    private static final String PASSWORD = "JustinBieber28";
+
+    private static final int TIMEOUT = 5;
 
     private Connection connection;
 
+
     public JDBConnectionWrapper(String schema){
+
         try {
             Class.forName(JDBC_DRIVER);
             connection = DriverManager.getConnection(DB_URL + schema, USER, PASSWORD);
-            //Bootstrap
             createTables();
-
-        }catch (ClassNotFoundException | SQLException e){
+        }catch (ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        } catch (SQLException e){
             e.printStackTrace();
         }
     }
@@ -33,13 +39,14 @@ public class JDBConnectionWrapper {
         Statement statement = connection.createStatement();
 
         String sql = "CREATE TABLE IF NOT EXISTS book(" +
-                "id bigint NOT NULL AUTO_INCREMENT," +
-                "author varchar(500) NOT NULL," +
-                "title varchar(500) NOT NULL," +
-                "publishedDate datetime DEFAULT NULL," +
-                "PRIMARY KEY(id),"+
-                "UNIQUE KEY id_UNIQUE(id)" +
+                " id bigint NOT NULL AUTO_INCREMENT," +
+                " author varchar(500) NOT NULL," +
+                " title varchar(500) NOT NULL," +
+                " publishedDate datetime DEFAULT NULL," +
+                " PRIMARY KEY(id)," +
+                " UNIQUE KEY id_UNIQUE(id)" +
                 ") ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;";
+
         statement.execute(sql);
     }
 

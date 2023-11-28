@@ -1,15 +1,18 @@
 package repository.book;
 
 import model.Book;
+import model.Order;
 import model.builder.BookBuilder;
+import model.builder.OrderBuilder;
 
-import javax.xml.transform.Result;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class BookRepositoryMySQL implements BookRepository{
+
     private final Connection connection;
 
     public BookRepositoryMySQL(Connection connection){
@@ -21,43 +24,43 @@ public class BookRepositoryMySQL implements BookRepository{
         String sql = "SELECT * FROM book;";
 
         List<Book> books = new ArrayList<>();
-        try{
-            Statement statement = connection.createStatement();
 
+        try {
+            Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sql);
 
             while (resultSet.next()){
                 books.add(getBookFromResultSet(resultSet));
             }
 
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-
 
         return books;
     }
 
     @Override
     public Optional<Book> findById(Long id) {
-        String sql = "SELECT * FROM book WHERE id = ?;";
-        try {
+        String sql = "SELECT * FROM book WHERE id = ?";
+        Optional<Book> book = Optional.empty();
+
+        try{
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, id);
 
             ResultSet resultSet = preparedStatement.executeQuery();
 
-            if (resultSet.next()) {
-                return Optional.of(getBookFromResultSet(resultSet));
-            } else {
-                return Optional.empty();
+            if (resultSet.next()){
+                book = Optional.of(getBookFromResultSet(resultSet));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
-    }
 
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return book;
+    }
 
     /**
      *
@@ -74,17 +77,13 @@ public class BookRepositoryMySQL implements BookRepository{
 
 
     // ALWAYS use PreparedStatement when USER INPUT DATA is present
-    // DON'T CONCATENATE Strings
+    // DON'T CONCATENATE Strings!
 
     @Override
     public boolean save(Book book) {
-        //String sql = "INSERT INTO book VALUES(null, ?, ?, ?);";
-        String sql = "INSERT INTO book (author, title, publishedDate) VALUES (?, ?, ?);";
+        String sql = "INSERT INTO book VALUES(null, ?, ?, ?);";
 
-//        String newSql = "INSERT INTO book VALUES(null, \'" + book.getAuthor() +"\', \'"+ book.getTitle()+"\', null );";
-
-
-
+        String newSql = "INSERT INTO book VALUES(null, \'" + book.getAuthor() +"\', \'"+ book.getTitle()+"\', null );";
 
 
         try{
@@ -98,16 +97,7 @@ public class BookRepositoryMySQL implements BookRepository{
             preparedStatement.setDate(3, java.sql.Date.valueOf(book.getPublishedDate()));
 
             int rowsInserted = preparedStatement.executeUpdate();
-            /*
-            if (rowsInserted == 1) {
-                ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    book.setId(generatedKeys.getLong(1));
-                }
-                return true;*/
-            /*} else {
-                return false;
-            }*/
+
             return (rowsInserted != 1) ? false : true;
 
         } catch (SQLException e){
@@ -116,25 +106,76 @@ public class BookRepositoryMySQL implements BookRepository{
         }
 
     }
+    @Override
+    public boolean buyBook(Long customerId, Long bookId) {
+        String sql = "INSERT INTO order_table(customer_id, book_id, purchase_date) VALUES (?, ?, ?);";
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setLong(1, customerId);
+            preparedStatement.setLong(2, bookId);
+            preparedStatement.setDate(3, Date.valueOf(LocalDate.now()));
+
+            int rowsInserted = preparedStatement.executeUpdate();
+
+            return (rowsInserted != 1) ? false : true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public List<Order> getCustomerOrders(Long customerId) {
+        String sql = "SELECT * FROM order_table WHERE customer_id = ?;";
+
+        List<Order> orders = new ArrayList<>();
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setLong(1, customerId);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                orders.add(getOrderFromResultSet(resultSet));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return orders;
+    }
+
 
     @Override
     public void removeAll() {
-        String sql = "DELETE FROM book;";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
+        String sql = "DELETE FROM book WHERE id >= 0;";
+
+        try{
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(sql);
+        }catch (SQLException e){
             e.printStackTrace();
         }
     }
 
-
-    private Book getBookFromResultSet(ResultSet resultSet) throws SQLException {
+    private Book getBookFromResultSet(ResultSet resultSet) throws SQLException{
         return new BookBuilder()
                 .setId(resultSet.getLong("id"))
-                .setAuthor(resultSet.getString("author"))
                 .setTitle(resultSet.getString("title"))
-                .setPublishedDate(new java.sql.Date((resultSet.getDate("publishedDate")).getTime()).toLocalDate())
+                .setAuthor(resultSet.getString("author"))
+                .setPublishedDate(new java.sql.Date(resultSet.getDate("publishedDate").getTime()).toLocalDate())
+                .build();
+    }
+    private Order getOrderFromResultSet(ResultSet resultSet) throws SQLException {
+        return new OrderBuilder()
+                .setId(resultSet.getLong("id"))
+                .setCustomerId(resultSet.getLong("customer_id"))
+                .setBookId(resultSet.getLong("book_id"))
+                .setPurchaseDate(resultSet.getDate("purchase_date").toLocalDate())
                 .build();
     }
 }
