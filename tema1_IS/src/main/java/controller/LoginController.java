@@ -4,28 +4,24 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.stage.Stage;
 import model.User;
-import model.validator.UserValidator;
+import model.validator.Notification;
 import repository.book.BookRepository;
 import service.book.BookServiceImpl;
 import service.user.AuthenticationService;
 import view.CustomerView;
 import view.LoginView;
 
-import java.util.List;
-
 public class LoginController {
 
     private final LoginView loginView;
     private final AuthenticationService authenticationService;
-    private final UserValidator userValidator;
     private final BookRepository bookRepository;
     private final Stage primaryStage;
 
-    public LoginController(LoginView loginView, AuthenticationService authenticationService, BookRepository bookRepository, UserValidator userValidator, Stage primaryStage) {
+    public LoginController(LoginView loginView, AuthenticationService authenticationService, BookRepository bookRepository, Stage primaryStage) {
         this.loginView = loginView;
         this.authenticationService = authenticationService;
         this.bookRepository = bookRepository;
-        this.userValidator = userValidator;
         this.primaryStage = primaryStage;
 
         this.loginView.addLoginButtonListener(new LoginButtonListener());
@@ -40,16 +36,18 @@ public class LoginController {
             String username = loginView.getUsername();
             String password = loginView.getPassword();
 
-            User user = authenticationService.login(username, password);
+            Notification<User> loginNotification = authenticationService.login(username, password);
 
-            if (user == null){
-                loginView.setActionTargetText("Invalid Username or password!");
+            if (loginNotification.hasErrors()){
+                System.out.println("Login errors: " + loginNotification.getFormattedErrors());
+
+                loginView.setActionTargetText(loginNotification.getFormattedErrors());
             }else{
                 loginView.setActionTargetText("LogIn Successfull!");
-                showCustomerView(user);
+                showCustomerView(loginNotification);
             }
         }
-        private void showCustomerView(User user) {
+        private void showCustomerView(Notification<User> user) {
             CustomerController customerController = new CustomerController(new CustomerView(primaryStage), new BookServiceImpl(bookRepository), authenticationService);
         }
     }
@@ -61,16 +59,12 @@ public class LoginController {
             String username = loginView.getUsername();
             String password = loginView.getPassword();
 
-            userValidator.validate(username, password);
-            final List<String> errors = userValidator.getErrors();
-            if (errors.isEmpty()) {
-                if (authenticationService.register(username, password)){
-                    loginView.setActionTargetText("Register successfull!");
-                }else{
-                    loginView.setActionTargetText("Register NOT successfull!");
-                }
+            Notification<Boolean> registerNotification = authenticationService.register(username, password);
+
+            if (registerNotification.hasErrors()) {
+                loginView.setActionTargetText(registerNotification.getFormattedErrors());
             } else {
-                loginView.setActionTargetText(userValidator.getFormattedErrors());
+                loginView.setActionTargetText("Register successful!");
             }
         }
     }
