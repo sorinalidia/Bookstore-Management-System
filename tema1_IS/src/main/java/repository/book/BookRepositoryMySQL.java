@@ -5,6 +5,7 @@ import model.Order;
 import model.builder.BookBuilder;
 import model.builder.OrderBuilder;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -81,7 +82,7 @@ public class BookRepositoryMySQL implements BookRepository{
 
     @Override
     public boolean save(Book book) {
-        String sql = "INSERT INTO book VALUES(null, ?, ?, ?);";
+        String sql = "INSERT INTO book VALUES(null, ?, ?, ?, ?, ?);";
 
         String newSql = "INSERT INTO book VALUES(null, \'" + book.getAuthor() +"\', \'"+ book.getTitle()+"\', null );";
 
@@ -95,6 +96,8 @@ public class BookRepositoryMySQL implements BookRepository{
             preparedStatement.setString(1, book.getAuthor());
             preparedStatement.setString(2, book.getTitle());
             preparedStatement.setDate(3, java.sql.Date.valueOf(book.getPublishedDate()));
+            preparedStatement.setInt(4, book.getQuantity());
+            preparedStatement.setBigDecimal(5, book.getPrice());
 
             int rowsInserted = preparedStatement.executeUpdate();
 
@@ -106,15 +109,18 @@ public class BookRepositoryMySQL implements BookRepository{
         }
 
     }
-    @Override
-    public boolean buyBook(Long customerId, Long bookId) {
-        String sql = "INSERT INTO order_table(customer_id, book_id, purchase_date) VALUES (?, ?, ?);";
 
+    /*@Override
+    public boolean buyBook(Long customerId, Long bookId, BigDecimal price) {
+        String sql = "INSERT INTO `order` VALUES (null,?, ?, ?, ?, ?);";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, customerId);
             preparedStatement.setLong(2, bookId);
             preparedStatement.setDate(3, Date.valueOf(LocalDate.now()));
+            preparedStatement.setInt(4,1);
+            preparedStatement.setBigDecimal(5,price);
+
 
             int rowsInserted = preparedStatement.executeUpdate();
 
@@ -124,7 +130,37 @@ public class BookRepositoryMySQL implements BookRepository{
             e.printStackTrace();
             return false;
         }
+    }*/
+
+    @Override
+    public boolean buyBook(Long customerId, Long bookId, BigDecimal price) {
+        String insertOrderSql = "INSERT INTO `order` VALUES (null,?, ?, ?, ?, ?);";
+        String updateBookSql = "UPDATE book SET quantity = quantity - 1 WHERE id = ?;";
+
+        try {
+            // Insert order
+            PreparedStatement insertOrderStatement = connection.prepareStatement(insertOrderSql);
+            insertOrderStatement.setLong(1, customerId);
+            insertOrderStatement.setLong(2, bookId);
+            insertOrderStatement.setDate(3, Date.valueOf(LocalDate.now()));
+            insertOrderStatement.setInt(4, 1);
+            insertOrderStatement.setBigDecimal(5, price);
+
+            int rowsInsertedOrder = insertOrderStatement.executeUpdate();
+
+            // Update book quantity
+            PreparedStatement updateBookStatement = connection.prepareStatement(updateBookSql);
+            updateBookStatement.setLong(1, bookId);
+
+            int rowsUpdatedBook = updateBookStatement.executeUpdate();
+
+            return (rowsInsertedOrder == 1 && rowsUpdatedBook == 1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
+
 
     @Override
     public List<Order> getCustomerOrders(Long customerId) {
@@ -168,6 +204,8 @@ public class BookRepositoryMySQL implements BookRepository{
                 .setTitle(resultSet.getString("title"))
                 .setAuthor(resultSet.getString("author"))
                 .setPublishedDate(new java.sql.Date(resultSet.getDate("publishedDate").getTime()).toLocalDate())
+                .setQuantity(resultSet.getInt("quantity"))
+                .setPrice(resultSet.getBigDecimal("price"))
                 .build();
     }
     private Order getOrderFromResultSet(ResultSet resultSet) throws SQLException {

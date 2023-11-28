@@ -42,4 +42,7 @@ public class User {
     public void setRoles(List<Role> roles) {
         this.roles = roles;
     }
+    public String toString(){
+        return "id: " + this.id + "\n" + "username: " + this.username;
+    }
 }

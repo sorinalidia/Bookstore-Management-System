@@ -40,7 +40,7 @@ public class CustomerController {
 
             if (selectedBook != null) {
                 Long customerId = authenticationService.getLoggedInCustomerId();
-
+                System.out.println(customerId);
                boolean purchaseSuccess = bookService.buyBook(customerId, selectedBook.getId());
 
                 if (purchaseSuccess) {

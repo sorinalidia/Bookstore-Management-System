@@ -52,13 +52,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
     @Override
     public Notification<User> login(String username, String password) {
-        Notification<User> notificationFindByUsernameAndPassword=userRepository.findByUsernameAndPassword(username,hashPassword(password));
+        Notification<User> notificationFindByUsernameAndPassword = userRepository.findByUsernameAndPassword(username, hashPassword(password));
 
         if (notificationFindByUsernameAndPassword.hasErrors()) {
+            loggedInUser = notificationFindByUsernameAndPassword.getResult();
+           // System.out.println(loggedInUser.toString());
             return notificationFindByUsernameAndPassword;
         }
 
         loggedInUser = notificationFindByUsernameAndPassword.getResult();
+        loggedInUser.setId(userRepository.findUserIdByUsername(username));
+        System.out.println(loggedInUser.toString());
         return notificationFindByUsernameAndPassword;
     }
 
@@ -70,7 +74,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public Long getLoggedInCustomerId() {
-        return (loggedInUser != null) ? loggedInUser.getId() : null;
+        if (loggedInUser != null) {
+            return loggedInUser.getId();
+        }
+        return null;
     }
 
     private String hashPassword(String password) {

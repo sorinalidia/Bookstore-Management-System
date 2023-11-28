@@ -5,8 +5,8 @@ package model;
 // POJO - Plain Old Java Object
 
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
 
 public class Book{
 
@@ -18,6 +18,8 @@ public class Book{
 
     private LocalDate publishedDate;
 
+    private BigDecimal price;
+    private int quantity;
 
     public Long getId() {
         return id;
@@ -51,6 +53,21 @@ public class Book{
         this.publishedDate = publishedDate;
     }
 
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
     @Override
     public String toString(){
         return String.format("Id: %d | Title: %s | Author: %s | Date: %s", this.id, this.title, this.author, this.publishedDate);
