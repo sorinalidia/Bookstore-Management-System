@@ -2,10 +2,13 @@ package view;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.Book;
 
@@ -13,18 +16,28 @@ import java.util.List;
 
 public class CustomerView {
 
-    private final ListView<Book> bookListView;
+    private final ListView<HBox> bookListView;
     private final Button viewBooksButton;
     private final Button buyBookButton;
+    private final Label messageLabel; // Added label for displaying messages
 
     public CustomerView(Stage primaryStage) {
         bookListView = new ListView<>();
         viewBooksButton = new Button("View Books");
         buyBookButton = new Button("Buy Selected Book");
+        messageLabel = new Label(); // Initialize label
 
-        HBox hbox = new HBox(viewBooksButton, buyBookButton, bookListView);
+        viewBooksButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+        buyBookButton.setStyle("-fx-background-color: #008CBA; -fx-text-fill: white;");
 
-        Scene customerScene = new Scene(hbox, 720, 480);
+        viewBooksButton.setPadding(new Insets(10));
+        buyBookButton.setPadding(new Insets(10));
+
+        // Use a VBox for vertical alignment
+        VBox vbox = new VBox(10, viewBooksButton, buyBookButton, messageLabel, bookListView); // Add label to the VBox
+        vbox.setPadding(new Insets(20));
+
+        Scene customerScene = new Scene(vbox, 720, 480);
 
         primaryStage.setScene(customerScene);
     }
@@ -39,22 +52,50 @@ public class CustomerView {
 
     public void displayBooks(List<Book> books) {
         bookListView.getItems().clear();
-        bookListView.getItems().addAll(books);
+        for (Book book : books) {
+            HBox bookEntry = new HBox();
+            Label titleLabel = new Label(" Title: " + book.getTitle());
+            Label authorLabel = new Label("  Author: " + book.getAuthor());
+
+            if (book.getQuantity() > 0) {
+                bookEntry.getChildren().addAll(titleLabel,authorLabel);
+            } else {
+                Label outOfStockLabel = new Label("(Out of Stock)");
+                outOfStockLabel.setStyle("-fx-text-fill: red;"); // Optional: Apply styling
+                bookEntry.getChildren().addAll(titleLabel, authorLabel, outOfStockLabel);
+            }
+
+            bookEntry.setUserData(book);
+
+            bookListView.getItems().add(bookEntry);
+        }
     }
 
     public Book getSelectedBook() {
-        return bookListView.getSelectionModel().getSelectedItem();
+        int selectedIndex = bookListView.getSelectionModel().getSelectedIndex();
+
+        if (selectedIndex != -1) {
+            HBox selectedHBox = bookListView.getItems().get(selectedIndex);
+            return (Book) selectedHBox.getUserData();
+        } else {
+            return null;
+        }
     }
 
+
     public void showPurchaseSuccessMessage() {
-        System.out.println("Purchase successful!");
+        setMessage("Purchase successful!");
     }
 
     public void showPurchaseFailureMessage() {
-        System.out.println("Purchase failed!");
+        setMessage("Purchase failed!");
     }
 
     public void showNoBookSelectedMessage() {
-        System.out.println("No book selected!");
+        setMessage("No book selected!");
+    }
+
+    private void setMessage(String message) {
+        messageLabel.setText(message);
     }
 }

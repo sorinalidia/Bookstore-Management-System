@@ -9,6 +9,8 @@ import repository.book.BookRepositoryCacheDecorator;
 import repository.book.BookRepositoryMock;
 import repository.book.Cache;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,6 +45,9 @@ public class BookRepositoryMockTest {
         Book book = new BookBuilder()
                 .setAuthor("Author")
                 .setTitle("Title")
+                .setPublishedDate(LocalDate.of(2001,6,19))
+                .setQuantity(2)
+                .setPrice(BigDecimal.valueOf(12.99))
                 .build();
 
         assertTrue(bookRepository.save(book));

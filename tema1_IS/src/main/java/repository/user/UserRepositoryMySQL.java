@@ -66,7 +66,7 @@ public class UserRepositoryMySQL implements UserRepository {
         Notification<User> findByUsernameAndPasswordNotification = new Notification<>();
 
         try {
-            String fetchUserSql = "SELECT * FROM `" + USER + "` WHERE `username`=? AND `password`=?";
+            String fetchUserSql = "SELECT * FROM user WHERE `username`=? AND `password`=?";
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(fetchUserSql)) {
                 preparedStatement.setString(1, username);
@@ -143,6 +143,26 @@ public class UserRepositoryMySQL implements UserRepository {
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+    @Override
+    public Long findUserIdByUsername(String username) {
+        try {
+            String fetchUserIdSql = "SELECT id FROM `" + USER + "` WHERE `username`=?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(fetchUserIdSql)) {
+                preparedStatement.setString(1, username);
+
+                ResultSet resultSet = preparedStatement.executeQuery();
+
+                if (resultSet.next()) {
+                    return resultSet.getLong("id");
+                } else {
+                    return null;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

@@ -11,6 +11,7 @@ import repository.book.BookRepositoryCacheDecorator;
 import repository.book.BookRepositoryMySQL;
 import repository.book.Cache;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -49,6 +50,8 @@ public class BookRepositoryMySQLTest {
                 .setTitle("TitleTest")
                 .setAuthor("AuthorTest")
                 .setPublishedDate(LocalDate.of(2010, 6, 2))
+                .setQuantity(5)
+                .setPrice(BigDecimal.valueOf(13.99))
                 .build();
 
         bookRepository.save(book);
@@ -72,6 +75,8 @@ public class BookRepositoryMySQLTest {
                         .setTitle("TitleTest")
                         .setAuthor("AuthorTest")
                         .setPublishedDate(LocalDate.of(2010, 6, 2))
+                        .setQuantity(4)
+                        .setPrice(BigDecimal.valueOf(13.99))
                         .build()
         ));
     }

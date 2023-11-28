@@ -43,8 +43,8 @@ public class BookServiceImpl implements BookService{
     public boolean buyBook(Long customerId, Long bookId) {
         Book book = bookRepository.findById(bookId).orElse(null);
 
-        if (book != null) {
-            return bookRepository.buyBook(customerId, bookId);
+        if (book != null && customerId!=null && book.getQuantity()>=1) {
+            return bookRepository.buyBook(customerId, book.getId(), book.getPrice());
         }
 
         return false;
