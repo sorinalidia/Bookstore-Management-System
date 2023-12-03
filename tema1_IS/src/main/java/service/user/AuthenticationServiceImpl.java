@@ -45,7 +45,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             userRegisterNotification.setResult(Boolean.FALSE);
         } else {
             user.setPassword(hashPassword(password));
-            userRegisterNotification.setResult(userRepository.save(user));
+            userRegisterNotification.setResult(userRepository.save(user).getResult());
         }
 
         return userRegisterNotification;
@@ -55,14 +55,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Notification<User> notificationFindByUsernameAndPassword = userRepository.findByUsernameAndPassword(username, hashPassword(password));
 
         if (notificationFindByUsernameAndPassword.hasErrors()) {
-            loggedInUser = notificationFindByUsernameAndPassword.getResult();
-           // System.out.println(loggedInUser.toString());
             return notificationFindByUsernameAndPassword;
         }
 
         loggedInUser = notificationFindByUsernameAndPassword.getResult();
         loggedInUser.setId(userRepository.findUserIdByUsername(username));
-        System.out.println(loggedInUser.toString());
         return notificationFindByUsernameAndPassword;
     }
 
