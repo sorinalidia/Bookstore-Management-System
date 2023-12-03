@@ -33,7 +33,6 @@ public class CustomerView {
         viewBooksButton.setPadding(new Insets(10));
         buyBookButton.setPadding(new Insets(10));
 
-        // Use a VBox for vertical alignment
         VBox vbox = new VBox(10, viewBooksButton, buyBookButton, messageLabel, bookListView); // Add label to the VBox
         vbox.setPadding(new Insets(20));
 
