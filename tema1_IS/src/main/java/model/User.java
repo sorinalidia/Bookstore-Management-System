@@ -43,6 +43,6 @@ public class User {
         this.roles = roles;
     }
     public String toString(){
-        return "id: " + this.id + "\n" + "username: " + this.username;
+        return "id: " + this.id + "\n" + "username: " + this.username +"\n";
     }
 }

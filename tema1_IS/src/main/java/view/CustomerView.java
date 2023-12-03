@@ -54,8 +54,8 @@ public class CustomerView {
         bookListView.getItems().clear();
         for (Book book : books) {
             HBox bookEntry = new HBox();
-            Label titleLabel = new Label(" Title: " + book.getTitle());
-            Label authorLabel = new Label("  Author: " + book.getAuthor());
+            Label titleLabel = new Label(" Title: " + book.getTitle()) ;
+            Label authorLabel = new Label("  Author: " + book.getAuthor() + "   Price:" + book.getPrice());
 
             if (book.getQuantity() > 0) {
                 bookEntry.getChildren().addAll(titleLabel,authorLabel);
