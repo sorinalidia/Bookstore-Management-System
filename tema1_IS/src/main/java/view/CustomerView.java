@@ -19,13 +19,13 @@ public class CustomerView {
     private final ListView<HBox> bookListView;
     private final Button viewBooksButton;
     private final Button buyBookButton;
-    private final Label messageLabel; // Added label for displaying messages
+    private final Label messageLabel;
 
     public CustomerView(Stage primaryStage) {
         bookListView = new ListView<>();
         viewBooksButton = new Button("View Books");
         buyBookButton = new Button("Buy Selected Book");
-        messageLabel = new Label(); // Initialize label
+        messageLabel = new Label();
 
         viewBooksButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
         buyBookButton.setStyle("-fx-background-color: #008CBA; -fx-text-fill: white;");
@@ -61,7 +61,7 @@ public class CustomerView {
                 bookEntry.getChildren().addAll(titleLabel,authorLabel);
             } else {
                 Label outOfStockLabel = new Label("(Out of Stock)");
-                outOfStockLabel.setStyle("-fx-text-fill: red;"); // Optional: Apply styling
+                outOfStockLabel.setStyle("-fx-text-fill: red;");
                 bookEntry.getChildren().addAll(titleLabel, authorLabel, outOfStockLabel);
             }
 

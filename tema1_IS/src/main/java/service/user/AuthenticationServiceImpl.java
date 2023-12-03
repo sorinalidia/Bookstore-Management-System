@@ -12,8 +12,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Collections;
 
-import static database.Constants.Roles.CUSTOMER;
-
 public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final UserRepository userRepository;
@@ -25,9 +23,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public Notification<Boolean> register(String username, String password) {
+    public Notification<Boolean> register(String username, String password, String role) {
 
-        Role customerRole = rightsRolesRepository.findRoleByTitle(CUSTOMER);
+        Role customerRole = rightsRolesRepository.findRoleByTitle(role);
 
         User user = new UserBuilder()
                 .setUsername(username)

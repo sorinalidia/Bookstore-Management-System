@@ -6,10 +6,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
@@ -22,6 +19,7 @@ public class LoginView {
 
     private TextField userTextField;
     private PasswordField passwordField;
+    private ComboBox<String> roleChoiceBox;
     private Button signInButton;
     private Button logInButton;
     private Text actiontarget;
@@ -73,6 +71,10 @@ public class LoginView {
         passwordField = new PasswordField();
         gridPane.add(passwordField, 1, 2);
 
+        roleChoiceBox = new ComboBox<>();
+        gridPane.add(roleChoiceBox,2,2);
+        populateRoleChoiceBox();
+
         signInButton = new Button("Sign In");
         HBox signInButtonHBox = new HBox(10);
         signInButtonHBox.setAlignment(Pos.BOTTOM_RIGHT);
@@ -88,8 +90,11 @@ public class LoginView {
         actiontarget = new Text();
         actiontarget.setFill(Color.FIREBRICK);
         gridPane.add(actiontarget, 1, 6);
-    }
 
+    }
+    private void populateRoleChoiceBox() {
+        roleChoiceBox.getItems().addAll("customer", "employee", "admin");
+    }
     public String getUsername() {
         return userTextField.getText();
     }
@@ -98,6 +103,9 @@ public class LoginView {
         return passwordField.getText();
     }
 
+    public String getUserRole(){
+        return roleChoiceBox.getValue();
+    }
     public void setActionTargetText(String text){ this.actiontarget.setText(text);}
 
     public void addLoginButtonListener(EventHandler<ActionEvent> loginButtonListener) {
