@@ -35,6 +35,7 @@ public class LoginController {
         public void handle(javafx.event.ActionEvent event) {
             String username = loginView.getUsername();
             String password = loginView.getPassword();
+            String user = loginView.getUserRole();
 
             Notification<User> loginNotification = authenticationService.login(username, password);
 
@@ -58,8 +59,8 @@ public class LoginController {
         public void handle(ActionEvent event) {
             String username = loginView.getUsername();
             String password = loginView.getPassword();
-
-            Notification<Boolean> registerNotification = authenticationService.register(username, password);
+            String user = loginView.getUserRole();
+            Notification<Boolean> registerNotification = authenticationService.register(username, password, user);
 
             if (registerNotification.hasErrors()) {
                 loginView.setActionTargetText(registerNotification.getFormattedErrors());
