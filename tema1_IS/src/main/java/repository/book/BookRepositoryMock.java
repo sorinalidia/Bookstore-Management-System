@@ -66,4 +66,15 @@ public class BookRepositoryMock implements BookRepository{
     public void removeAll() {
         books.clear();
     }
+
+    @Override
+    public boolean removeBookById(Long bookId) {
+        Optional<Book> bookToRemove = findById(bookId);
+
+        if (bookToRemove.isPresent()) {
+            return books.remove(bookToRemove.get());
+        }
+
+        return false;
+    }
 }

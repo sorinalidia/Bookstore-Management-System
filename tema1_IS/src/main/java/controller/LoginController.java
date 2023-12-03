@@ -9,7 +9,11 @@ import repository.book.BookRepository;
 import service.book.BookServiceImpl;
 import service.user.AuthenticationService;
 import view.CustomerView;
+import view.EmployeeView;
 import view.LoginView;
+
+import static database.Constants.Roles.CUSTOMER;
+import static database.Constants.Roles.EMPLOYEE;
 
 public class LoginController {
 
@@ -35,21 +39,41 @@ public class LoginController {
         public void handle(javafx.event.ActionEvent event) {
             String username = loginView.getUsername();
             String password = loginView.getPassword();
-            String user = loginView.getUserRole();
+            String role = loginView.getUserRole();
 
-            Notification<User> loginNotification = authenticationService.login(username, password);
+            Notification<User> loginNotification = authenticationService.login(username, password, role);
 
             if (loginNotification.hasErrors()){
                 System.out.println("Login errors: " + loginNotification.getFormattedErrors());
 
                 loginView.setActionTargetText(loginNotification.getFormattedErrors());
             }else{
-                loginView.setActionTargetText("LogIn Successfull!");
-                showCustomerView(loginNotification);
+                loginView.setActionTargetText("LogIn Successful!");
+                if(role!=null){
+//                    System.out.println(loginNotification.getResult().displayRoles());
+                    if(loginNotification.getResult().hasRole(role)){
+                        if (role.equals(CUSTOMER)){
+                           showCustomerView(loginNotification);
+                        }
+                        else if (role.equals(EMPLOYEE)) {
+                            showEmployeeView(loginNotification);
+                        }
+                    }
+                    else{
+                        loginView.setActionTargetText("Access denied!");
+                    }
+                }else {
+                    loginView.setActionTargetText("Login failed!");
+                }
+
             }
         }
         private void showCustomerView(Notification<User> user) {
             CustomerController customerController = new CustomerController(new CustomerView(primaryStage), new BookServiceImpl(bookRepository), authenticationService);
+        }
+
+        private void showEmployeeView(Notification<User> user) {
+            EmployeeController employeeController = new EmployeeController(new EmployeeView(primaryStage), new BookServiceImpl(bookRepository), authenticationService);
         }
     }
 

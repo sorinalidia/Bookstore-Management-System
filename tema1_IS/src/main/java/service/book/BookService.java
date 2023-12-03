@@ -15,4 +15,5 @@ public interface BookService {
     int getAgeOfBook(Long id);
 
     boolean buyBook(Long customerId, Long id);
+    boolean removeBook(Long id);
 }

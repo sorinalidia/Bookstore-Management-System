@@ -84,13 +84,7 @@ public class BookRepositoryMySQL implements BookRepository{
     public boolean save(Book book) {
         String sql = "INSERT INTO book VALUES(null, ?, ?, ?, ?, ?);";
 
-        String newSql = "INSERT INTO book VALUES(null, \'" + book.getAuthor() +"\', \'"+ book.getTitle()+"\', null );";
-
-
         try{
-//            Statement statement = connection.createStatement();
-//            statement.executeUpdate(newSql);
-//            return true;
 
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, book.getAuthor());
@@ -110,35 +104,12 @@ public class BookRepositoryMySQL implements BookRepository{
 
     }
 
-    /*@Override
-    public boolean buyBook(Long customerId, Long bookId, BigDecimal price) {
-        String sql = "INSERT INTO `order` VALUES (null,?, ?, ?, ?, ?);";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setLong(1, customerId);
-            preparedStatement.setLong(2, bookId);
-            preparedStatement.setDate(3, Date.valueOf(LocalDate.now()));
-            preparedStatement.setInt(4,1);
-            preparedStatement.setBigDecimal(5,price);
-
-
-            int rowsInserted = preparedStatement.executeUpdate();
-
-            return (rowsInserted != 1) ? false : true;
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }*/
-
     @Override
     public boolean buyBook(Long customerId, Long bookId, BigDecimal price) {
         String insertOrderSql = "INSERT INTO `order` VALUES (null,?, ?, ?, ?, ?);";
         String updateBookSql = "UPDATE book SET quantity = quantity - 1 WHERE id = ?;";
 
         try {
-            // Insert order
             PreparedStatement insertOrderStatement = connection.prepareStatement(insertOrderSql);
             insertOrderStatement.setLong(1, customerId);
             insertOrderStatement.setLong(2, bookId);
@@ -148,7 +119,6 @@ public class BookRepositoryMySQL implements BookRepository{
 
             int rowsInsertedOrder = insertOrderStatement.executeUpdate();
 
-            // Update book quantity
             PreparedStatement updateBookStatement = connection.prepareStatement(updateBookSql);
             updateBookStatement.setLong(1, bookId);
 
@@ -195,6 +165,23 @@ public class BookRepositoryMySQL implements BookRepository{
             statement.executeUpdate(sql);
         }catch (SQLException e){
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public boolean removeBookById(Long bookId) {
+        String sql = "DELETE FROM book WHERE id = ?;";
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setLong(1, bookId);
+
+            int rowsDeleted = preparedStatement.executeUpdate();
+
+            return rowsDeleted == 1;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 

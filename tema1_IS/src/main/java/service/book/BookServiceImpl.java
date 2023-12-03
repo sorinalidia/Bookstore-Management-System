@@ -49,4 +49,16 @@ public class BookServiceImpl implements BookService{
 
         return false;
     }
+
+    @Override
+    public boolean removeBook(Long bookId) {
+        Book book = bookRepository.findById(bookId).orElse(null);
+
+        if (book != null) {
+            return bookRepository.removeBookById(bookId);
+        }
+
+        return false;
+    }
+
 }

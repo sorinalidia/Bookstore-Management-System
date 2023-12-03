@@ -45,4 +45,20 @@ public class User {
     public String toString(){
         return "id: " + this.id + "\n" + "username: " + this.username +"\n";
     }
+    public String displayRoles(){
+        StringBuilder s = new StringBuilder("roluri :");
+        for(Role role: roles){
+            s.append(String.valueOf(role.getRole()));
+
+        }
+        return String.valueOf(s);
+    }
+    public boolean hasRole(String userRole){
+        for(Role role:roles){
+            if(role.getRole().equals(userRole)){
+                return true;
+            }
+        }
+        return  false;
+    }
 }

@@ -95,13 +95,15 @@ public class UserRepositoryMySQL implements UserRepository {
             insertUserStatement.executeUpdate();
 
             ResultSet rs = insertUserStatement.getGeneratedKeys();
-            rs.next();
-            long userId = rs.getLong(1);
-            user.setId(userId);
+            if(rs.next()) {
+                long userId = rs.getLong(1);
+                user.setId(userId);
+                rightsRolesRepository.addRolesToUser(user, user.getRoles());
+                saveNotification.setResult(true);
+            }else{
+                saveNotification.addError("");
+            }
 
-            rightsRolesRepository.addRolesToUser(user, user.getRoles());
-
-            saveNotification.setResult(true);
         } catch (SQLException e) {
             e.printStackTrace();
             saveNotification.addError("Something is wrong with the database!");
