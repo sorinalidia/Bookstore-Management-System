@@ -8,13 +8,20 @@ public class SQLTableCreationFactory {
         return switch (table) {
             case BOOK -> "CREATE TABLE IF NOT EXISTS book (" +
                     "  id int(11) NOT NULL AUTO_INCREMENT," +
+                    "  employee_id bigint NOT NULL,"+
                     "  author varchar(500) NOT NULL," +
                     "  title varchar(500) NOT NULL," +
                     "  publishedDate datetime DEFAULT NULL," +
                     "  quantity INT NOT NULL," +
                     "  price DECIMAL(10, 2) NOT NULL," +
                     "  PRIMARY KEY (id)," +
-                    "  UNIQUE KEY id_UNIQUE (id)" +
+                    "  UNIQUE KEY id_UNIQUE (id)," +
+                    "  INDEX employee_id_idx (employee_id ASC)," +
+                    "  CONSTRAINT employee_fkid" +
+                    "    FOREIGN KEY (employee_id)" +
+                    "    REFERENCES user (id)" +
+                    "    ON DELETE CASCADE" +
+                    "    ON UPDATE CASCADE" +
                     ") ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;";
             case USER -> "CREATE TABLE IF NOT EXISTS user (" +
                     "  id INT NOT NULL AUTO_INCREMENT," +
@@ -73,7 +80,8 @@ public class SQLTableCreationFactory {
                     "    ON UPDATE CASCADE);";
             case ORDER -> "\tCREATE TABLE IF NOT EXISTS `order` (" +
                     "  id INT NOT NULL AUTO_INCREMENT," +
-                    "  customer_id INT NOT NULL," +
+                    "  customer_id int NOT NULL," +
+                    "  employee_id int NOT NULL,"+
                     "  book_id bigint NOT NULL," +
                     "  purchase_date datetime," +
                     "  quantity INT NOT NULL," +
@@ -82,6 +90,7 @@ public class SQLTableCreationFactory {
                     "  UNIQUE INDEX id_UNIQUE (id ASC)," +
                     "  INDEX customer_id_idx (customer_id ASC)," +
                     "  INDEX book_id_idx (book_id ASC)," +
+                    "  INDEX employee_id_idx (employee_id ASC)," +
                     "  CONSTRAINT customer_fkid" +
                     "    FOREIGN KEY (customer_id)" +
                     "    REFERENCES user (id)" +
@@ -91,7 +100,12 @@ public class SQLTableCreationFactory {
                     "    FOREIGN KEY (book_id)" +
                     "    REFERENCES book (id)" +
                     "    ON DELETE CASCADE" +
-                    "    ON UPDATE CASCADE);";
+                    "    ON UPDATE CASCADE," +
+                    "  CONSTRAINT employee_fkid" +
+                    "    FOREIGN KEY (employee_id)" +
+                    "    REFERENCES user (id)" +
+                    "    ON DELETE CASCADE" +
+                    "    ON UPDATE CASCADE);" ;
             default -> "";
         };
     }

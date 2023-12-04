@@ -27,7 +27,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Notification<Boolean> userRegisterNotification = new Notification<>();
         boolean alreadyExists= userRepository.existsByUsername(username);
 
-        if(!alreadyExists){
+        if((!alreadyExists) && (role!=null)){
             Role customerRole = rightsRolesRepository.findRoleByTitle(role);
 
             User user = new UserBuilder()

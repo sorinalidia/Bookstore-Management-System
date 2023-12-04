@@ -40,6 +40,7 @@ public class JDBConnectionWrapper {
 
         String sql = "CREATE TABLE IF NOT EXISTS book(" +
                 " id bigint NOT NULL AUTO_INCREMENT," +
+                " employee_id bigint NOT NULL," +
                 " author varchar(500) NOT NULL," +
                 " title varchar(500) NOT NULL," +
                 " publishedDate datetime DEFAULT NULL," +

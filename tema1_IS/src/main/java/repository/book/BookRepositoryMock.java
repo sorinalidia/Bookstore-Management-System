@@ -3,7 +3,6 @@ package repository.book;
 import model.Book;
 import model.Order;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,11 +36,11 @@ public class BookRepositoryMock implements BookRepository{
     }
 
     @Override
-    public boolean buyBook(Long customerId, Long bookId, BigDecimal price) {
-        Optional<Book> book = findById(bookId);
+    public boolean buyBook(Long customerId, Book bookToBuy) {
+        Optional<Book> book = findById(bookToBuy.getId());
 
         if (book.isPresent()) {
-            Order order = new Order(null, customerId, bookId, LocalDate.now());
+            Order order = new Order(null, customerId, bookToBuy.getId(), LocalDate.now());
             orders.add(order);
             return true;
         }

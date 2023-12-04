@@ -3,7 +3,6 @@ package repository.book;
 import model.Book;
 import model.Order;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,8 +48,8 @@ public class BookRepositoryCacheDecorator extends BookRepositoryDecorator{
     }
 
     @Override
-    public boolean buyBook(Long customerId, Long bookId, BigDecimal price) {
-        boolean result = decoratedRepository.buyBook(customerId, bookId, price);
+    public boolean buyBook(Long customerId,Book book) {
+        boolean result = decoratedRepository.buyBook(customerId, book);
 
         cache.invalidateCache();
 

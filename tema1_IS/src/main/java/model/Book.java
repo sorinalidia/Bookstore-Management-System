@@ -20,6 +20,7 @@ public class Book{
 
     private BigDecimal price;
     private int quantity;
+    private Long employeeId;
 
     public Long getId() {
         return id;
@@ -68,8 +69,14 @@ public class Book{
     public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
+    public void setEmployeeId(Long employeeId){
+        this.employeeId = employeeId;
+    }
+    public Long getEmployeeId(){
+        return this.employeeId;
+    }
     @Override
     public String toString(){
-        return String.format("Id: %d | Title: %s | Author: %s | Date: %s", this.id, this.title, this.author, this.publishedDate);
+        return String.format("Id: %d | EmployeeId: %s | Title: %s | Author: %s | Date: %s", this.id, this.employeeId, this.title, this.author, this.publishedDate);
     }
 }

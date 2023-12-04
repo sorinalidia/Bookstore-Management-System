@@ -5,7 +5,6 @@ import model.Order;
 import model.builder.BookBuilder;
 import model.builder.OrderBuilder;
 
-import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -82,16 +81,17 @@ public class BookRepositoryMySQL implements BookRepository{
 
     @Override
     public boolean save(Book book) {
-        String sql = "INSERT INTO book VALUES(null, ?, ?, ?, ?, ?);";
+        String sql = "INSERT INTO book VALUES(null, ?, ?, ?, ?, ?, ?);";
 
         try{
 
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, book.getAuthor());
-            preparedStatement.setString(2, book.getTitle());
-            preparedStatement.setDate(3, java.sql.Date.valueOf(book.getPublishedDate()));
-            preparedStatement.setInt(4, book.getQuantity());
-            preparedStatement.setBigDecimal(5, book.getPrice());
+            preparedStatement.setLong(1, book.getEmployeeId());
+            preparedStatement.setString(2, book.getAuthor());
+            preparedStatement.setString(3, book.getTitle());
+            preparedStatement.setDate(4, java.sql.Date.valueOf(book.getPublishedDate()));
+            preparedStatement.setInt(5, book.getQuantity());
+            preparedStatement.setBigDecimal(6, book.getPrice());
 
             int rowsInserted = preparedStatement.executeUpdate();
 
@@ -105,22 +105,23 @@ public class BookRepositoryMySQL implements BookRepository{
     }
 
     @Override
-    public boolean buyBook(Long customerId, Long bookId, BigDecimal price) {
-        String insertOrderSql = "INSERT INTO `order` VALUES (null,?, ?, ?, ?, ?);";
+    public boolean buyBook(Long customerId, Book book) {
+        String insertOrderSql = "INSERT INTO `order` VALUES (null,?,?,?, ?, ?, ?);";
         String updateBookSql = "UPDATE book SET quantity = quantity - 1 WHERE id = ?;";
 
         try {
             PreparedStatement insertOrderStatement = connection.prepareStatement(insertOrderSql);
             insertOrderStatement.setLong(1, customerId);
-            insertOrderStatement.setLong(2, bookId);
-            insertOrderStatement.setDate(3, Date.valueOf(LocalDate.now()));
-            insertOrderStatement.setInt(4, 1);
-            insertOrderStatement.setBigDecimal(5, price);
+            insertOrderStatement.setLong(2, book.getEmployeeId());
+            insertOrderStatement.setLong(3, book.getId());
+            insertOrderStatement.setDate(4, Date.valueOf(LocalDate.now()));
+            insertOrderStatement.setInt(5, 1);
+            insertOrderStatement.setBigDecimal(6, book.getPrice());
 
             int rowsInsertedOrder = insertOrderStatement.executeUpdate();
 
             PreparedStatement updateBookStatement = connection.prepareStatement(updateBookSql);
-            updateBookStatement.setLong(1, bookId);
+            updateBookStatement.setLong(1, book.getId());
 
             int rowsUpdatedBook = updateBookStatement.executeUpdate();
 
@@ -134,7 +135,7 @@ public class BookRepositoryMySQL implements BookRepository{
 
     @Override
     public List<Order> getCustomerOrders(Long customerId) {
-        String sql = "SELECT * FROM order_table WHERE customer_id = ?;";
+        String sql = "SELECT * FROM `order` WHERE customer_id = ?;";
 
         List<Order> orders = new ArrayList<>();
 
@@ -188,6 +189,7 @@ public class BookRepositoryMySQL implements BookRepository{
     private Book getBookFromResultSet(ResultSet resultSet) throws SQLException{
         return new BookBuilder()
                 .setId(resultSet.getLong("id"))
+                .setEmployeeId(resultSet.getLong("employee_id"))
                 .setTitle(resultSet.getString("title"))
                 .setAuthor(resultSet.getString("author"))
                 .setPublishedDate(new java.sql.Date(resultSet.getDate("publishedDate").getTime()).toLocalDate())
@@ -199,6 +201,7 @@ public class BookRepositoryMySQL implements BookRepository{
         return new OrderBuilder()
                 .setId(resultSet.getLong("id"))
                 .setCustomerId(resultSet.getLong("customer_id"))
+                .setEmployeeId(resultSet.getLong("employee_id"))
                 .setBookId(resultSet.getLong("book_id"))
                 .setPurchaseDate(resultSet.getDate("purchase_date").toLocalDate())
                 .build();

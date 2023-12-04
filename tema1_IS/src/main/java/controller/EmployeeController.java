@@ -19,7 +19,7 @@ public class EmployeeController {
         this.authenticationService = authenticationService;
 
         employeeView.addViewBooksButtonListener(new ViewBooksButtonListener());
-        employeeView.addSellBookButtonListener(new BuyBookButtonListener());
+        employeeView.addSellBookButtonListener(new SellBookButtonListener());
         employeeView.addRemoveBookButtonListener(new RemoveBookButtonListener());
     }
 
@@ -30,10 +30,12 @@ public class EmployeeController {
         }
     }
 
-    private class BuyBookButtonListener implements EventHandler<ActionEvent> {
+    private class SellBookButtonListener implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent event) {
             Book newBook = employeeView.getNewBook();
+            Long userId = authenticationService.getLoggedInCustomerId();
+            newBook.setEmployeeId(userId);
 
             if (isValidBook(newBook)) {
                 boolean addSuccess = bookService.save(newBook);

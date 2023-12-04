@@ -83,13 +83,17 @@ public class LoginController {
         public void handle(ActionEvent event) {
             String username = loginView.getUsername();
             String password = loginView.getPassword();
-            String user = loginView.getUserRole();
-            Notification<Boolean> registerNotification = authenticationService.register(username, password, user);
+            String userRole = loginView.getUserRole();
+            Notification<Boolean> registerNotification = authenticationService.register(username, password, userRole);
 
-            if (registerNotification.hasErrors()) {
-                loginView.setActionTargetText(registerNotification.getFormattedErrors());
-            } else {
-                loginView.setActionTargetText("Register successful!");
+            if(userRole!=null) {
+                if (registerNotification.hasErrors()) {
+                    loginView.setActionTargetText(registerNotification.getFormattedErrors());
+                } else {
+                    loginView.setActionTargetText("Register successful!");
+                }
+            }else{
+                loginView.setActionTargetText("Register failed!");
             }
         }
     }
