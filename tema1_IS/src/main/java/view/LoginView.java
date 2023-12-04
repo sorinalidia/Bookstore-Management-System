@@ -71,8 +71,11 @@ public class LoginView {
         passwordField = new PasswordField();
         gridPane.add(passwordField, 1, 2);
 
+        Label checkBox = new Label("You are:");
+        gridPane.add(checkBox,2,1);
+
         roleChoiceBox = new ComboBox<>();
-        gridPane.add(roleChoiceBox,2,2);
+        gridPane.add(roleChoiceBox,3,1);
         populateRoleChoiceBox();
 
         signInButton = new Button("Sign In");

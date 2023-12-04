@@ -21,6 +21,10 @@ public class OrderBuilder {
         order.setCustomerId(customerId);
         return this;
     }
+    public OrderBuilder setEmployeeId(Long employeeId){
+        order.setEmployeeId(employeeId);
+        return this;
+    }
 
     public OrderBuilder setBookId(Long bookId) {
         order.setBookId(bookId);

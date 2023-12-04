@@ -18,7 +18,10 @@ public class BookBuilder {
         book.setId(id);
         return this;
     }
-
+    public BookBuilder setEmployeeId(Long employeeId){
+        book.setEmployeeId(employeeId);
+        return this;
+    }
     public BookBuilder setAuthor(String author){
         book.setAuthor(author);
         return this;

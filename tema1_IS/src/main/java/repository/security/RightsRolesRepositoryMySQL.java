@@ -49,23 +49,59 @@ public class RightsRolesRepositoryMySQL implements RightsRolesRepository {
         }
     }
 
+//    @Override
+//    public Role findRoleByTitle(String role) {
+//        Statement statement;
+//        try {
+//            statement = connection.createStatement();
+//            String fetchRoleSql = "Select * from " + ROLE + " where `role`=\'" + role + "\'";
+//            ResultSet roleResultSet = statement.executeQuery(fetchRoleSql);
+//            roleResultSet.next();
+//            Long roleId = roleResultSet.getLong("id");
+//            String roleTitle = roleResultSet.getString("role");
+//            return new Role(roleId, roleTitle, null);
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return null;
+//    }
+
     @Override
     public Role findRoleByTitle(String role) {
-        Statement statement;
+        PreparedStatement preparedStatement = null;
+        ResultSet roleResultSet = null;
+
         try {
-            statement = connection.createStatement();
-            String fetchRoleSql = "Select * from " + ROLE + " where `role`=\'" + role + "\'";
-            ResultSet roleResultSet = statement.executeQuery(fetchRoleSql);
-            roleResultSet.next();
-            Long roleId = roleResultSet.getLong("id");
-            String roleTitle = roleResultSet.getString("role");
-            return new Role(roleId, roleTitle, null);
+            String fetchRoleSql = "SELECT * FROM " + ROLE + " WHERE `role` = ?";
+            preparedStatement = connection.prepareStatement(fetchRoleSql);
+            preparedStatement.setString(1, role);
+
+            roleResultSet = preparedStatement.executeQuery();
+
+            if (roleResultSet.next()) {
+                Long roleId = roleResultSet.getLong("id");
+                String roleTitle = roleResultSet.getString("role");
+                return new Role(roleId, roleTitle, null);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (roleResultSet != null) {
+                    roleResultSet.close();
+                }
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
 
         return null;
     }
+
 
     @Override
     public Role findRoleById(Long roleId) {

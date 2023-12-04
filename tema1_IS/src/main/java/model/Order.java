@@ -8,6 +8,7 @@ public class Order {
     private Long customerId;
     private Long bookId;
     private LocalDate purchaseDate;
+    private Long employeeId;
 
     public Order() {
     }
@@ -35,7 +36,12 @@ public class Order {
     public void setCustomerId(Long customerId) {
         this.customerId = customerId;
     }
-
+    public Long getEmployeeId(){
+        return this.employeeId;
+    }
+    public void setEmployeeId(Long employeeId){
+        this.employeeId = employeeId;
+    }
     public Long getBookId() {
         return bookId;
     }

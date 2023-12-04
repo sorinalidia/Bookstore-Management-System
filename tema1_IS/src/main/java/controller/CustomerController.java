@@ -72,8 +72,8 @@ public class CustomerController {
 
             if (selectedBook != null) {
                 Long customerId = authenticationService.getLoggedInCustomerId();
-                System.out.println(customerId);
-               boolean purchaseSuccess = bookService.buyBook(customerId, selectedBook.getId());
+
+                boolean purchaseSuccess = bookService.buyBook(customerId, selectedBook.getId());
 
                 if (purchaseSuccess) {
                     customerView.showPurchaseSuccessMessage();
