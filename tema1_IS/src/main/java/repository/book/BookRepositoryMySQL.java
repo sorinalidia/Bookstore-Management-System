@@ -155,6 +155,26 @@ public class BookRepositoryMySQL implements BookRepository{
 
         return orders;
     }
+    @Override
+    public List<Order> findAllOrders(){
+        String sql = "SELECT * FROM `order`;";
+
+        List<Order> orders = new ArrayList<>();
+
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            while (resultSet.next()){
+                orders.add(getOrderFromResultSet(resultSet));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return orders;
+    }
 
 
     @Override

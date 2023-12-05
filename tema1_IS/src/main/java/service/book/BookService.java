@@ -1,6 +1,7 @@
 package service.book;
 
 import model.Book;
+import model.Order;
 
 import java.util.List;
 
@@ -15,5 +16,8 @@ public interface BookService {
     int getAgeOfBook(Long id);
 
     boolean buyBook(Long customerId, Long id);
+
+    List<Order> getAllOrders();
+
     boolean removeBook(Long id);
 }

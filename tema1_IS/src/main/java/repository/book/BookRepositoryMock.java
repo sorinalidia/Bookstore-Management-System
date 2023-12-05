@@ -62,6 +62,11 @@ public class BookRepositoryMock implements BookRepository{
     }
 
     @Override
+    public List<Order> findAllOrders() {
+        return orders;
+    }
+
+    @Override
     public void removeAll() {
         books.clear();
     }

@@ -68,6 +68,18 @@ public class BookRepositoryCacheDecorator extends BookRepositoryDecorator{
     }
 
     @Override
+    public List<Order> findAllOrders() {
+        if (orderCache.hasResult()){
+            return orderCache.load();
+        }
+
+        List<Order> orders = decoratedRepository.findAllOrders();
+        orderCache.save(orders);
+
+        return orders;
+    }
+
+    @Override
     public void removeAll() {
         cache.invalidateCache();
         decoratedRepository.removeAll();
