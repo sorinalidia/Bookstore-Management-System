@@ -16,6 +16,8 @@ public interface BookRepository {
 
     List<Order> getCustomerOrders(Long customerId);
 
+    List<Order> findAllOrders();
+
     void removeAll();
     boolean removeBookById(Long bookId);
 

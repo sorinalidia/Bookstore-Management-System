@@ -5,9 +5,13 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import model.Book;
+import model.Order;
 import service.book.BookService;
+import service.report.PdfReportGenerator;
 import service.user.AuthenticationService;
 import view.EmployeeView;
+
+import java.util.List;
 
 public class EmployeeController {
     private final EmployeeView employeeView;
@@ -21,6 +25,8 @@ public class EmployeeController {
         employeeView.addViewBooksButtonListener(new ViewBooksButtonListener());
         employeeView.addSellBookButtonListener(new SellBookButtonListener());
         employeeView.addRemoveBookButtonListener(new RemoveBookButtonListener());
+//        employeeView.addUpdateBooksButtonListener(new UpdateBooksButtonListener());
+        employeeView.addGenerateReportButtonListener(new GenerateReportButtonListener() );
     }
 
     private class ViewBooksButtonListener implements EventHandler<ActionEvent> {
@@ -49,10 +55,10 @@ public class EmployeeController {
                 employeeView.showValidationError();
             }
         }
-
         private boolean isValidBook(Book book) {
             return !book.getTitle().isEmpty() && !book.getAuthor().isEmpty() && book.getQuantity() > 0;
         }
+
     }
 
     private class RemoveBookButtonListener implements EventHandler<ActionEvent> {
@@ -78,4 +84,18 @@ public class EmployeeController {
             }
         }
     }
+    private class GenerateReportButtonListener implements EventHandler<ActionEvent> {
+        @Override
+        public void handle(ActionEvent event) {
+            List<Order> orders = bookService.getAllOrders();
+            generatePdfReport(orders);
+        }
+    }
+    private void generatePdfReport(List<Order> orders) {
+
+        PdfReportGenerator.generatePdfReport( orders);
+    }
 }
+
+
+
