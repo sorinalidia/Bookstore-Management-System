@@ -17,4 +17,14 @@ public interface UserRepository {
 
     boolean existsByUsername(String username);
     Long findUserIdByUsername(String username);
+
+    boolean existsByRoleTitle(String roleTitle);
+
+    List<User> findAllEmployees();
+
+    boolean removeUserById(Long id);
+
+    Notification<Boolean> updatePasswordById(Long id, String newPassword);
+
+    Notification<Boolean> updateUsernameById(Long employeeId, String newUsername);
 }

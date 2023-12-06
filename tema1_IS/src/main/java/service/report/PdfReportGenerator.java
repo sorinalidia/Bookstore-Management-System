@@ -17,7 +17,6 @@ public class PdfReportGenerator {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         String filePath = "D:\\IS\\IS_project\\tema1_IS\\report" + timestamp + ".pdf";
 
-
         try {
             PdfWriter writer = new PdfWriter(filePath);
             PdfDocument pdf = new PdfDocument(writer);

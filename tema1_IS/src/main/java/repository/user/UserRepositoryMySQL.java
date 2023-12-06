@@ -161,4 +161,133 @@ public class UserRepositoryMySQL implements UserRepository {
             return null;
         }
     }
+
+    @Override
+    public boolean existsByRoleTitle(String role) {
+        try {
+            String sql = "SELECT COUNT(*) FROM user_role ur " +
+                    "JOIN user u ON ur.user_id = u.id " +
+                    "JOIN role r ON ur.role_id = r.id " +
+                    "WHERE r.role = ?";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, role);
+
+                ResultSet resultSet = preparedStatement.executeQuery();
+
+                if (resultSet.next()) {
+                    int count = resultSet.getInt(1);
+                    return count > 0;
+                } else {
+                    return false;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public List<User> findAllEmployees() {
+        List<User> employeeList = new ArrayList<>();
+
+        try {
+            String fetchAllEmployeesSql = "SELECT u.id, u.username " +
+                    "FROM user u " +
+                    "JOIN user_role ur ON u.id = ur.user_id " +
+                    "JOIN role r ON ur.role_id = r.id " +
+                    "WHERE r.role = ?";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(fetchAllEmployeesSql)) {
+                preparedStatement.setString(1, "EMPLOYEE");
+
+                try (ResultSet employeeResultSet = preparedStatement.executeQuery()) {
+                    while (employeeResultSet.next()) {
+                        User employee = new UserBuilder()
+                                .setId(employeeResultSet.getLong("id"))
+                                .setUsername(employeeResultSet.getString("username"))
+                                .setRoles(rightsRolesRepository.findRolesForUser(employeeResultSet.getLong("id")))
+                                .build();
+
+                        employeeList.add(employee);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return employeeList;
+    }
+
+    @Override
+    public boolean removeUserById(Long id) {
+        try {
+            String deleteUserSql = "DELETE FROM user WHERE id = ?";
+            try (PreparedStatement deleteUserStatement = connection.prepareStatement(deleteUserSql)) {
+                deleteUserStatement.setLong(1, id);
+                int affectedRows = deleteUserStatement.executeUpdate();
+
+                return affectedRows > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public Notification<Boolean> updatePasswordById(Long id, String newPassword) {
+        Notification<Boolean> updateNotification = new Notification<>();
+
+        try {
+            String updatePasswordSql = "UPDATE user SET password = ? WHERE id = ?";
+            try (PreparedStatement updatePasswordStatement = connection.prepareStatement(updatePasswordSql)) {
+                updatePasswordStatement.setString(1, newPassword);
+                updatePasswordStatement.setLong(2, id);
+
+                int affectedRows = updatePasswordStatement.executeUpdate();
+
+                if (affectedRows > 0) {
+                    updateNotification.setResult(true);
+                } else {
+                    updateNotification.addError("User not found or password update failed.");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            updateNotification.addError("Something is wrong with the database!");
+        }
+
+        return updateNotification;
+    }
+    @Override
+    public Notification<Boolean> updateUsernameById(Long employeeId, String newUsername) {
+        Notification<Boolean> notification = new Notification<>();
+
+        try {
+            String updateUsernameSql = "UPDATE user SET username = ? WHERE id = ?";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(updateUsernameSql)) {
+                preparedStatement.setString(1, newUsername);
+                preparedStatement.setLong(2, employeeId);
+
+                int affectedRows = preparedStatement.executeUpdate();
+
+                if (affectedRows > 0) {
+                    notification.setResult(true);
+                } else {
+                    notification.addError("Failed to update employee username. Employee not found.");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            notification.addError("Something went wrong with the database.");
+        }
+
+        return notification;
+    }
+
+
 }
