@@ -96,7 +96,7 @@ public class LoginView {
 
     }
     private void populateRoleChoiceBox() {
-        roleChoiceBox.getItems().addAll("customer", "employee", "admin");
+        roleChoiceBox.getItems().addAll("customer", "employee", "administrator");
     }
     public String getUsername() {
         return userTextField.getText();

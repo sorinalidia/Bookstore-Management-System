@@ -8,12 +8,12 @@ import model.validator.Notification;
 import repository.book.BookRepository;
 import service.book.BookServiceImpl;
 import service.user.AuthenticationService;
+import view.AdminView;
 import view.CustomerView;
 import view.EmployeeView;
 import view.LoginView;
 
-import static database.Constants.Roles.CUSTOMER;
-import static database.Constants.Roles.EMPLOYEE;
+import static database.Constants.Roles.*;
 
 public class LoginController {
 
@@ -50,13 +50,15 @@ public class LoginController {
             }else{
                 loginView.setActionTargetText("LogIn Successful!");
                 if(role!=null){
-//                    System.out.println(loginNotification.getResult().displayRoles());
                     if(loginNotification.getResult().hasRole(role)){
                         if (role.equals(CUSTOMER)){
                            showCustomerView(loginNotification);
                         }
                         else if (role.equals(EMPLOYEE)) {
                             showEmployeeView(loginNotification);
+                        }
+                        else if(role.equals(ADMINISTRATOR)){
+                            showAdminView(loginNotification);
                         }
                     }
                     else{
@@ -74,6 +76,9 @@ public class LoginController {
 
         private void showEmployeeView(Notification<User> user) {
             EmployeeController employeeController = new EmployeeController(new EmployeeView(primaryStage), new BookServiceImpl(bookRepository), authenticationService);
+        }
+        private void showAdminView(Notification<User> user) {
+            AdminController adminController = new AdminController(new AdminView(primaryStage), authenticationService);
         }
     }
 

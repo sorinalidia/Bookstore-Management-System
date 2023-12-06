@@ -11,6 +11,9 @@ import repository.user.UserRepository;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Collections;
+import java.util.List;
+
+import static database.Constants.Roles.ADMINISTRATOR;
 
 public class AuthenticationServiceImpl implements AuthenticationService {
 
@@ -102,4 +105,99 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new RuntimeException(ex);
         }
     }
+    @Override
+    public boolean createAdmin(String username, String password) {
+        if (hasAdmin()) {
+            System.out.println("Admin already exists. Cannot create another admin.");
+            return false;
+        }else {
+            Role adminRole = rightsRolesRepository.findRoleByTitle(ADMINISTRATOR);
+            User admin = new UserBuilder()
+                    .setUsername(username)
+                    .setPassword(hashPassword(password))
+                    .setRoles(Collections.singletonList(adminRole))
+                    .build();
+            userRepository.save(admin);
+            return true;
+        }
+    }
+
+    @Override
+    public boolean hasAdmin() {
+        return userRepository.existsByRoleTitle(ADMINISTRATOR);
+    }
+
+    @Override
+    public List<User> getEmployees() {
+        return userRepository.findAllEmployees();
+    }
+
+    @Override
+    public boolean removeEmployee(Long id) {
+        return userRepository.removeUserById(id);
+    }
+
+    @Override
+    public Notification<Boolean> updateEmployeePassword(Long id, String newPassword) {
+        Notification<Boolean> notification = new Notification<>();
+
+        try {
+            Role role = rightsRolesRepository.findRolesForUser(id).get(0);
+            User updatedUser = new UserBuilder()
+                    .setId(id)
+                    .setUsername("dummy@gmail.com")     //it's just for validating the password, it won't change the username
+                    .setPassword(newPassword)
+                    .setRoles(Collections.singletonList(role))
+                    .build();
+
+            UserValidator userValidator = new UserValidator(updatedUser);
+            boolean userValid = userValidator.validate();
+
+            if (!userValid) {
+                userValidator.getErrors().forEach(notification::addError);
+            } else {
+                notification.setResult(userRepository.updatePasswordById(id, hashPassword(newPassword)).getResult());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            notification.addError("Something went wrong with the database.");
+        }
+
+        return notification;
+    }
+    @Override
+    public Notification<Boolean> updateEmployeeUsername(Long id, String newUsername) {
+        Notification<Boolean> notification = new Notification<>();
+
+        boolean usernameExists = userRepository.existsByUsername(newUsername);
+        if (usernameExists) {
+            notification.addError("Username already in use. Please choose another one.");
+            return notification;
+        }
+
+        try {
+            Role role = rightsRolesRepository.findRolesForUser(id).get(0);
+            User updatedUser = new UserBuilder()
+                    .setId(id)
+                    .setUsername(newUsername)
+                    .setPassword("Dummy123!")   //it's just for validating the username, it won't change the password
+                    .setRoles(Collections.singletonList(role))
+                    .build();
+
+            UserValidator userValidator = new UserValidator(updatedUser);
+            boolean userValid = userValidator.validate();
+
+            if (!userValid) {
+                userValidator.getErrors().forEach(notification::addError);
+            } else {
+                notification.setResult(userRepository.updateUsernameById(id, newUsername).getResult());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            notification.addError("Something went wrong with the database.");
+        }
+
+        return notification;
+    }
+
 }
