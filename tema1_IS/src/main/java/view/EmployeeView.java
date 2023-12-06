@@ -17,7 +17,6 @@ import java.util.List;
 
 public class EmployeeView {
     private final TabPane tabPane;
-    private final Tab viewBooksTab;
     private final Tab sellBookTab;
     private final Tab removeBookTab;
     private final Tab updateBookTab;
@@ -33,32 +32,20 @@ public class EmployeeView {
     private final Label messageLabel;
 
     private final Button updateBookButton;
-    private final TextField updateTitleField;
-    private final TextField updateAuthorField;
-    private final TextField updateQuantityField;
-    private final TextField updatePriceField;
-    private final DatePicker updatePublicationDateField;
     private final Button generateReportButton;
     public EmployeeView(Stage primaryStage){
         tabPane = new TabPane();
-        viewBooksTab = new Tab("View Books");
-        sellBookTab = new Tab("Sell Book");
-        removeBookTab = new Tab("Remove Book");
-        updateBookTab = new Tab("Update Book");
+        sellBookTab = new Tab("Add book");
+        updateBookTab = new Tab("Update book");
+        removeBookTab = new Tab("Delete book");
 
         bookListView = new ListView<>();
         viewBooksButton = new Button("View Books");
-        sellBookButton = new Button("Sell Selected Book");
+        sellBookButton = new Button("Add Book");
         removeBookButton = new Button("Remove Selected Book");
         messageLabel = new Label();
 
-        // Initialize fields for updating books
         updateBookButton = new Button("Update Selected Book");
-        updateTitleField = new TextField();
-        updateAuthorField = new TextField();
-        updateQuantityField = new TextField();
-        updatePriceField = new TextField();
-        updatePublicationDateField = new DatePicker();
 
         titleField = new TextField();
         authorField = new TextField();
@@ -96,7 +83,8 @@ public class EmployeeView {
                 generateReportButton);
 
         vbox.setPadding(new Insets(20));
-        Scene employeeScene = new Scene(vbox, 1000, 800);
+        Scene employeeScene = new Scene(vbox, 800, 800);
+
 
         primaryStage.setScene(employeeScene);
 
@@ -139,22 +127,52 @@ public class EmployeeView {
                 .setPublishedDate(publicationDateField.getValue())
                 .build();
     }
+
     public Book getUpdatedBook() {
         int selectedIndex = bookListView.getSelectionModel().getSelectedIndex();
 
         if (selectedIndex != -1) {
             Book selectedBook = getSelectedBook();
-            return new BookBuilder()
-                    .setTitle(updateTitleField.getText())
-                    .setAuthor(updateAuthorField.getText())
-                    .setQuantity(Integer.parseInt(updateQuantityField.getText()))
-                    .setPrice(BigDecimal.valueOf(Double.parseDouble(updatePriceField.getText())))
-                    .setPublishedDate(updatePublicationDateField.getValue())
-                    .build();
+            BookBuilder bookBuilder = new BookBuilder();
+
+            if (!titleField.getText().isEmpty()) {
+                bookBuilder.setTitle(titleField.getText());
+            }else{
+                bookBuilder.setTitle(selectedBook.getTitle());
+            }
+
+            if (!authorField.getText().isEmpty()) {
+                bookBuilder.setAuthor(authorField.getText());
+            }else{
+                bookBuilder.setAuthor(selectedBook.getAuthor());
+            }
+
+            if (!quantityField.getText().isEmpty()) {
+                bookBuilder.setQuantity(Integer.parseInt(quantityField.getText()));
+            }else{
+                bookBuilder.setQuantity(selectedBook.getQuantity());
+            }
+
+            if (!priceField.getText().isEmpty()) {
+                bookBuilder.setPrice(BigDecimal.valueOf(Double.parseDouble(priceField.getText())));
+            }else{
+                bookBuilder.setPrice(selectedBook.getPrice());
+            }
+
+            if (publicationDateField.getValue() != null) {
+                bookBuilder.setPublishedDate(publicationDateField.getValue());
+            }else{
+                bookBuilder.setPublishedDate(selectedBook.getPublishedDate());
+            }
+
+            return bookBuilder.build();
         } else {
             return null;
         }
     }
+
+
+
     public void addGenerateReportButtonListener(EventHandler<ActionEvent> listener) {
         generateReportButton.setOnAction(listener);
     }
@@ -193,11 +211,22 @@ public class EmployeeView {
     }
 
     public void showValidationError() {
-        setMessage("Invalid book details");
+        setMessage("Invalid book details!");
     }
 
     private void setMessage(String message) {
         messageLabel.setText(message);
     }
 
+    public void showUpdateBookSuccessMessage() {
+        messageLabel.setText("Book updated successfully!");
+    }
+
+    public void showUpdateBookFailureMessage() {
+        messageLabel.setText("Failed to update book!");
+    }
+
+    public void showFailureMessage() {
+        messageLabel.setText("You cannot modify this book!");
+    }
 }

@@ -66,4 +66,13 @@ public class BookServiceImpl implements BookService{
         return false;
     }
 
+    @Override
+    public boolean updateBook(Book updatedBook) {
+        if (updatedBook != null) {
+            return bookRepository.update(updatedBook);
+        }
+
+        return false;
+    }
+
 }

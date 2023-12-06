@@ -21,4 +21,5 @@ public interface BookRepository {
     void removeAll();
     boolean removeBookById(Long bookId);
 
+    boolean update(Book existingBook);
 }

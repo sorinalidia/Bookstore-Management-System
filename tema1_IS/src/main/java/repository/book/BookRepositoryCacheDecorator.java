@@ -95,4 +95,9 @@ public class BookRepositoryCacheDecorator extends BookRepositoryDecorator{
 
         return result;
     }
+
+    @Override
+    public boolean update(Book existingBook) {
+        return false;
+    }
 }
