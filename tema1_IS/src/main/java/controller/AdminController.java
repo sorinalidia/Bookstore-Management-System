@@ -4,8 +4,11 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import model.Order;
 import model.User;
 import model.validator.Notification;
+import service.book.BookService;
+import service.report.PdfReportGenerator;
 import service.user.AuthenticationService;
 import view.AdminView;
 
@@ -16,16 +19,19 @@ import static database.Constants.Roles.EMPLOYEE;
 public class AdminController {
     private final AdminView adminView;
     private final AuthenticationService authenticationService;
+    private final BookService bookService;
 
-    public AdminController(AdminView adminView, AuthenticationService authenticationService){
+    public AdminController(AdminView adminView, AuthenticationService authenticationService, BookService bookService){
         this.adminView = adminView;
         this.authenticationService = authenticationService;
+        this.bookService = bookService;
 
         adminView.addViewEmployeeButtonListener(new ViewEmployeesButtonListener());
         adminView.addAddEmployeeButtonListener(new AddEmployeeButtonListener());
         adminView.addUpdateUsernameButtonListener(new UpdateUsernameButtonListener());
         adminView.addUpdatePasswordButtonListener(new UpdatePasswordButtonListener());
         adminView.addRemoveEmployeeButtonListener(new RemoveEmployeeButtonListener());
+        adminView.addGeneratePdfReportButtonListener(new GenerateReportButtonListener() );
     }
 
     private class AddEmployeeButtonListener implements EventHandler<ActionEvent> {
@@ -70,7 +76,6 @@ public class AdminController {
                 adminView.showMessage("No employee selected!");
             }
         }
-
     }
     private class UpdateUsernameButtonListener implements EventHandler<ActionEvent> {
         @Override
@@ -120,5 +125,16 @@ public class AdminController {
                 adminView.showMessage("No employee selected!");
             }
         }
+    }
+    private class GenerateReportButtonListener implements EventHandler<ActionEvent> {
+        @Override
+        public void handle(ActionEvent event) {
+            List<Order> orders = bookService.getAllOrders();
+            generatePdfReport(orders);
+        }
+    }
+    private void generatePdfReport(List<Order> orders) {
+
+        PdfReportGenerator.generatePdfReport( orders);
     }
 }

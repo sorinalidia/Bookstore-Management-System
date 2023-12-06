@@ -78,7 +78,7 @@ public class LoginController {
             EmployeeController employeeController = new EmployeeController(new EmployeeView(primaryStage), new BookServiceImpl(bookRepository), authenticationService);
         }
         private void showAdminView(Notification<User> user) {
-            AdminController adminController = new AdminController(new AdminView(primaryStage), authenticationService);
+            AdminController adminController = new AdminController(new AdminView(primaryStage), authenticationService, new BookServiceImpl(bookRepository));
         }
     }
 
