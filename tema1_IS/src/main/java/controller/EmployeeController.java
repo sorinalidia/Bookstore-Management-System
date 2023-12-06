@@ -25,7 +25,7 @@ public class EmployeeController {
         employeeView.addViewBooksButtonListener(new ViewBooksButtonListener());
         employeeView.addSellBookButtonListener(new SellBookButtonListener());
         employeeView.addRemoveBookButtonListener(new RemoveBookButtonListener());
-//        employeeView.addUpdateBooksButtonListener(new UpdateBooksButtonListener());
+        employeeView.addUpdateBooksButtonListener(new UpdateBookButtonListener());
         employeeView.addGenerateReportButtonListener(new GenerateReportButtonListener() );
     }
 
@@ -33,6 +33,40 @@ public class EmployeeController {
         @Override
         public void handle(ActionEvent event) {
             employeeView.displayBooks(bookService.findAll());
+        }
+    }
+    private class UpdateBookButtonListener implements EventHandler<ActionEvent> {
+        @Override
+        public void handle(ActionEvent event) {
+            Book selectedBook = employeeView.getSelectedBook();
+            Long userId = authenticationService.getLoggedInCustomerId();
+
+            if (selectedBook != null) {
+                if(userId.equals(selectedBook.getEmployeeId())) {
+                    Book updatedBook = employeeView.getUpdatedBook();
+
+                    if (isValidBook(updatedBook)) {
+                        updatedBook.setId(selectedBook.getId());
+                        updatedBook.setEmployeeId(userId);
+                        boolean updateSuccess = bookService.updateBook(updatedBook);
+
+                        if (updateSuccess) {
+                            employeeView.showUpdateBookSuccessMessage();
+                        } else {
+                            employeeView.showUpdateBookFailureMessage();
+                        }
+                    } else {
+                        employeeView.showValidationError();
+                    }
+                }else{
+                    employeeView.showFailureMessage();
+                }
+            } else {
+                employeeView.showNoBookSelectedMessage();
+            }
+        }
+        private boolean isValidBook(Book book) {
+            return book.getTitle()!=null || book.getAuthor()!=null || book.getPublishedDate()!=null || book.getPrice()!=null || book.getQuantity() > 0 ;
         }
     }
 
@@ -58,7 +92,6 @@ public class EmployeeController {
         private boolean isValidBook(Book book) {
             return !book.getTitle().isEmpty() && !book.getAuthor().isEmpty() && book.getQuantity() > 0;
         }
-
     }
 
     private class RemoveBookButtonListener implements EventHandler<ActionEvent> {

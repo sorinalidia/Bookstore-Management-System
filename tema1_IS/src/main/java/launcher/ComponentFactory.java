@@ -37,9 +37,7 @@ public class ComponentFactory {
         this.userRepository = new UserRepositoryMySQL(connection, rightsRolesRepository);
         this.authenticationService = new AuthenticationServiceImpl(userRepository, rightsRolesRepository);
         this.loginView = new LoginView(stage);
-        // Check if admin already exists before creating
         if (!authenticationService.hasAdmin()) {
-            // Create admin during application setup
             authenticationService.createAdmin("admin", "admin");
         }
         this.bookRepository = new BookRepositoryMySQL(connection);

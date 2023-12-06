@@ -20,4 +20,6 @@ public interface BookService {
     List<Order> getAllOrders();
 
     boolean removeBook(Long id);
+
+    boolean updateBook(Book updatedBook);
 }
