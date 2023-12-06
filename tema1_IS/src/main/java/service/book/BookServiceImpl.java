@@ -43,7 +43,6 @@ public class BookServiceImpl implements BookService{
     @Override
     public boolean buyBook(Long customerId, Long bookId) {
         Book book = bookRepository.findById(bookId).orElse(null);
-        System.out.println(book.toString());
         if (book != null && customerId!=null && book.getQuantity()>=1 && book.getEmployeeId()!=null) {
             return bookRepository.buyBook(customerId, book);
         }
@@ -71,7 +70,6 @@ public class BookServiceImpl implements BookService{
         if (updatedBook != null) {
             return bookRepository.update(updatedBook);
         }
-
         return false;
     }
 

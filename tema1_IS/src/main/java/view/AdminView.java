@@ -30,8 +30,7 @@ public class AdminView {
     private final TextField usernameField;
     private final PasswordField passwordField;
     private final Label messageLabel;
-    private final TextField usernameField1;
-    private final PasswordField passwordField1;
+    private final Button generateReportButton;
 
     public AdminView(Stage primaryStage) {
         tabPane = new TabPane();
@@ -49,10 +48,6 @@ public class AdminView {
         passwordField = new PasswordField();
         messageLabel = new Label();
 
-        usernameField1 = new TextField();
-        passwordField1 = new PasswordField();
-
-
         VBox vbox = new VBox();
         vbox.setPadding(new Insets(20));
         Scene adminScene = new Scene(vbox, 720, 720);
@@ -65,9 +60,11 @@ public class AdminView {
         updateEmployeeTab.setContent(updateEmployeeBox);
         deleteEmployeeTab.setContent(deleteEmployeeBox);
 
+        generateReportButton = new Button("Generate Report of orders");
+
         tabPane.getTabs().addAll( addEmployeeTab, updateEmployeeTab, deleteEmployeeTab);
 
-        vbox.getChildren().addAll(tabPane, messageLabel, viewEmployeesButton,employeeListView );
+        vbox.getChildren().addAll(tabPane, messageLabel, viewEmployeesButton,employeeListView,generateReportButton );
 
         primaryStage.setScene(adminScene);
     }
@@ -86,6 +83,9 @@ public class AdminView {
     }
     public void addRemoveEmployeeButtonListener(EventHandler<ActionEvent> listener) {
         deleteEmployeeButton.setOnAction(listener);
+    }
+    public void addGeneratePdfReportButtonListener(EventHandler<ActionEvent> listener) {
+        generateReportButton.setOnAction(listener);
     }
 
     public void displayEmployees(List<User> employees){
@@ -130,5 +130,6 @@ public class AdminView {
     public void showMessage(String message) {
         messageLabel.setText(message);
     }
+
 
 }

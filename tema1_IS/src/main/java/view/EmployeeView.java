@@ -16,10 +16,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class EmployeeView {
-    private final TabPane tabPane;
-    private final Tab sellBookTab;
-    private final Tab removeBookTab;
-    private final Tab updateBookTab;
     private final ListView<HBox> bookListView;
     private final Button viewBooksButton;
     private final Button sellBookButton;
@@ -34,11 +30,6 @@ public class EmployeeView {
     private final Button updateBookButton;
     private final Button generateReportButton;
     public EmployeeView(Stage primaryStage){
-        tabPane = new TabPane();
-        sellBookTab = new Tab("Add book");
-        updateBookTab = new Tab("Update book");
-        removeBookTab = new Tab("Delete book");
-
         bookListView = new ListView<>();
         viewBooksButton = new Button("View Books");
         sellBookButton = new Button("Add Book");
